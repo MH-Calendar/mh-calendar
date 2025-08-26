@@ -1,0 +1,19 @@
+* {
+  box-sizing: border-box;
+}
+
+:host {
+  width: 100%;
+}
+
+.mhCalendarEvent {
+  display: flex;
+  background-color: var(--eventBackgroundColor);
+  border-radius: 5px;
+  padding: 9px;
+  font-family: system-ui;
+  position: relative;
+  background-image: linear-gradient(to top, rgba(255,255,255,0.2), rgba(255,255,255,0));
+  overflow: hidden;
+  opacity: 0.9;
+} 

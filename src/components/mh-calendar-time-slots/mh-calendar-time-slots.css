@@ -1,0 +1,65 @@
+* {
+  box-sizing: border-box;
+}
+
+.mhCalendarTimeSlots__timeHolder {
+  height: 100%;
+  position: relative;
+  border-right: solid 1px var(--bordersColor);
+}
+
+.time__holder {
+  display: flex;
+  align-items: flex-start;
+  overflow: visible;
+  position: relative;
+  height: var(--time-slots-length);
+}
+
+.time__holder > .time,
+.lastHour {
+  transform: translate(-50%, -11px);
+  position: absolute;
+  left: 50%;
+}
+
+.time__holder > .allBox {
+  top: calc(50px - 10px);
+}
+
+.time {
+  color: #6b7280;
+  font-size: 14px;
+  border-bottom: none;
+  font-family: 'system-ui';
+}
+
+.mhCalendarWeek__border {
+  width: 100%;
+  height: var(--border-slots-length);
+  border-bottom: var(--bordersColor) solid 1px;
+
+  font-size: 12px;
+  font-family: system-ui;
+  color: #6b7280;
+
+  padding: 10px 20px;
+}
+
+.mhCalendarWeek__borders {
+  width: calc(100%);
+  /* margin-left: calc(var(--timeSlotWidth) - 30px); */
+  height: 100%;
+  position: absolute;
+  z-index: 0;
+}
+
+.gtm-info {
+  font-size: 10px;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: system-ui;
+}

@@ -1,0 +1,29 @@
+mh-calendar-event-full {
+  width: 100%;
+}
+
+.mhCalendarEventFull__userEventContentHolder,
+.mhCalendarEventFull {
+  width: 100%;
+  height: 100%;
+}
+
+.mhCalendarEventFull__content {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.mhCalendarEventFull__content__title {
+  color: #f0f0f0ff;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.mhCalendarEventFull__content__date {
+  font-size: 8px;
+  color: #121212;
+}

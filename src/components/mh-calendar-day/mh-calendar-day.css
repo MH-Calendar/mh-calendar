@@ -1,0 +1,105 @@
+* {
+  box-sizing: border-box;
+}
+
+:host {
+  height: 100%;
+  max-height: 100%;
+}
+
+.mhCalendarDay {
+  display: flex;
+  border-right: solid 1px var(--bordersColor);
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  position: relative;
+  justify-content: flex-start;
+  align-items: center;
+  overflow: visible;
+}
+
+.mhCalendarDay > span {
+  text-align: right;
+  min-width: 100%;
+  display: block;
+  height: min-content;
+  color: #000;
+}
+
+.day__hovered {
+  cursor: pointer;
+  background-color: #00000006;
+}
+
+.mhCalendarDay.current-month {
+  color: #000;
+  font-weight: normal;
+}
+
+.mhCalendarDay.weekend {
+  background-color: #00000009;
+  color: rgb(31, 31, 31);
+  font-weight: bold;
+}
+
+.mhCalendarDay.different-month {
+  font-weight: normal;
+  color: rgb(31, 31, 31);
+}
+
+.mhCalendarDay_allDaysEventHolder {
+  border-bottom: 1px solid var(--bordersColor);
+  top: 0;
+  z-index: 5;
+  background: white;
+  display: flex;
+  gap: 3px;
+  padding: 2px 1px;
+  flex-direction: column;
+  width: 100%;
+}
+
+.mhCalendarDay__eventsLeftIndicator {
+  padding: 4px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  background: #2ec62e;
+  width: 96%;
+  margin: 3px auto;
+  border-radius: 5px;
+  color: white;
+  font-weight: bold;
+}
+
+.mhCalendarDay_dayDate {
+  padding: 10px;
+  text-align: left;
+  font-size: 12px;
+  width: 100%;
+  font-family: system-ui;
+}
+
+.mhCalendarDay__currentTime::before {
+  content: '';
+  display: block;
+  width: 10px;
+  height: 10px;
+  background-color: var(--currentTimeColor);
+  position: absolute;
+  border-radius: 50%;
+  top: -4px;
+}
+
+.mhCalendarDay__currentTime {
+  position: absolute;
+  height: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 50%;
+  width: 100%;
+  z-index: 2;
+  background-color: var(--currentTimeColor);
+}
