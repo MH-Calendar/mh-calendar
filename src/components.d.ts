@@ -13,13 +13,22 @@ export { IMHCalendarEvent, IMHCalendarViewType } from "./store/store/mh-calendar
 export { IMHCalendarEvent as IMHCalendarEvent1 } from "./components";
 export namespace Components {
     interface MhCalendar {
+        /**
+          * @default {}
+         */
         "config": IMHCalendarFullOptions;
+        /**
+          * @default []
+         */
         "events": IMHCalendarEvent[];
         "getApi": () => Promise<import("/Users/mateusz/MH-Calendar/Dev/mh-calendar-core/src/store/store/mh-calendar-store.user-api").IMHCalendarStoreUserApi>;
         "reactComponent": any;
     }
     interface MhCalendarDay {
         "day"?: Date;
+        /**
+          * @default SHOW_DATE_ON_DAY
+         */
         "showCurrentDate": boolean;
     }
     interface MhCalendarEvent {
@@ -28,6 +37,9 @@ export namespace Components {
         "event"?: MHCalendarEvents;
         "eventTopPosition"?: number;
         "instanceOfEvent"?: string;
+        /**
+          * @default false
+         */
         "isDragged": boolean;
     }
     interface MhCalendarEventFull {
@@ -37,6 +49,9 @@ export namespace Components {
         "event"?: IMHCalendarEvent1;
     }
     interface MhCalendarHeader {
+        /**
+          * @default false
+         */
         "showCurrentDate": boolean;
     }
     interface MhCalendarMonth {
@@ -44,6 +59,9 @@ export namespace Components {
     interface MhCalendarMultiView {
     }
     interface MhCalendarNavigation {
+        /**
+          * @default DEFAULT_NAVIGATION_UNIT
+         */
         "changeDateRangeByUnit": IMHCalendarViewType;
     }
     interface MhCalendarTimeSlots {
@@ -125,12 +143,21 @@ declare global {
 }
 declare namespace LocalJSX {
     interface MhCalendar {
+        /**
+          * @default {}
+         */
         "config"?: IMHCalendarFullOptions;
+        /**
+          * @default []
+         */
         "events"?: IMHCalendarEvent[];
         "reactComponent"?: any;
     }
     interface MhCalendarDay {
         "day"?: Date;
+        /**
+          * @default SHOW_DATE_ON_DAY
+         */
         "showCurrentDate"?: boolean;
     }
     interface MhCalendarEvent {
@@ -139,6 +166,9 @@ declare namespace LocalJSX {
         "event"?: MHCalendarEvents;
         "eventTopPosition"?: number;
         "instanceOfEvent"?: string;
+        /**
+          * @default false
+         */
         "isDragged"?: boolean;
     }
     interface MhCalendarEventFull {
@@ -148,6 +178,9 @@ declare namespace LocalJSX {
         "event"?: IMHCalendarEvent1;
     }
     interface MhCalendarHeader {
+        /**
+          * @default false
+         */
         "showCurrentDate"?: boolean;
     }
     interface MhCalendarMonth {
@@ -155,6 +188,9 @@ declare namespace LocalJSX {
     interface MhCalendarMultiView {
     }
     interface MhCalendarNavigation {
+        /**
+          * @default DEFAULT_NAVIGATION_UNIT
+         */
         "changeDateRangeByUnit"?: IMHCalendarViewType;
     }
     interface MhCalendarTimeSlots {

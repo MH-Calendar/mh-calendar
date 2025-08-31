@@ -26,7 +26,7 @@ export type MhCalendarEvents = NonNullable<unknown>;
 export const MhCalendar: StencilReactComponent<MhCalendarElement, MhCalendarEvents> = /*@__PURE__*/ createComponent<MhCalendarElement, MhCalendarEvents>({
     tagName: 'mh-calendar',
     elementClass: MhCalendarElement,
-    // @ts-ignore - React type of Stencil Output Target may differ from the React version used in the Nuxt.js project, this can be ignored.
+    // @ts-ignore - ignore potential React type mismatches between the Stencil Output Target and your project.
     react: React,
     events: {} as MhCalendarEvents,
     defineCustomElement: defineMhCalendar
@@ -37,7 +37,7 @@ export type MhCalendarDayEvents = NonNullable<unknown>;
 export const MhCalendarDay: StencilReactComponent<MhCalendarDayElement, MhCalendarDayEvents> = /*@__PURE__*/ createComponent<MhCalendarDayElement, MhCalendarDayEvents>({
     tagName: 'mh-calendar-day',
     elementClass: MhCalendarDayElement,
-    // @ts-ignore - React type of Stencil Output Target may differ from the React version used in the Nuxt.js project, this can be ignored.
+    // @ts-ignore - ignore potential React type mismatches between the Stencil Output Target and your project.
     react: React,
     events: {} as MhCalendarDayEvents,
     defineCustomElement: defineMhCalendarDay
@@ -48,7 +48,7 @@ export type MhCalendarEventEvents = NonNullable<unknown>;
 export const MhCalendarEvent: StencilReactComponent<MhCalendarEventElement, MhCalendarEventEvents> = /*@__PURE__*/ createComponent<MhCalendarEventElement, MhCalendarEventEvents>({
     tagName: 'mh-calendar-event',
     elementClass: MhCalendarEventElement,
-    // @ts-ignore - React type of Stencil Output Target may differ from the React version used in the Nuxt.js project, this can be ignored.
+    // @ts-ignore - ignore potential React type mismatches between the Stencil Output Target and your project.
     react: React,
     events: {} as MhCalendarEventEvents,
     defineCustomElement: defineMhCalendarEvent
@@ -59,7 +59,7 @@ export type MhCalendarEventFullEvents = NonNullable<unknown>;
 export const MhCalendarEventFull: StencilReactComponent<MhCalendarEventFullElement, MhCalendarEventFullEvents> = /*@__PURE__*/ createComponent<MhCalendarEventFullElement, MhCalendarEventFullEvents>({
     tagName: 'mh-calendar-event-full',
     elementClass: MhCalendarEventFullElement,
-    // @ts-ignore - React type of Stencil Output Target may differ from the React version used in the Nuxt.js project, this can be ignored.
+    // @ts-ignore - ignore potential React type mismatches between the Stencil Output Target and your project.
     react: React,
     events: {} as MhCalendarEventFullEvents,
     defineCustomElement: defineMhCalendarEventFull
@@ -70,7 +70,7 @@ export type MhCalendarEventSmallEvents = NonNullable<unknown>;
 export const MhCalendarEventSmall: StencilReactComponent<MhCalendarEventSmallElement, MhCalendarEventSmallEvents> = /*@__PURE__*/ createComponent<MhCalendarEventSmallElement, MhCalendarEventSmallEvents>({
     tagName: 'mh-calendar-event-small',
     elementClass: MhCalendarEventSmallElement,
-    // @ts-ignore - React type of Stencil Output Target may differ from the React version used in the Nuxt.js project, this can be ignored.
+    // @ts-ignore - ignore potential React type mismatches between the Stencil Output Target and your project.
     react: React,
     events: {} as MhCalendarEventSmallEvents,
     defineCustomElement: defineMhCalendarEventSmall
@@ -81,7 +81,7 @@ export type MhCalendarHeaderEvents = NonNullable<unknown>;
 export const MhCalendarHeader: StencilReactComponent<MhCalendarHeaderElement, MhCalendarHeaderEvents> = /*@__PURE__*/ createComponent<MhCalendarHeaderElement, MhCalendarHeaderEvents>({
     tagName: 'mh-calendar-header',
     elementClass: MhCalendarHeaderElement,
-    // @ts-ignore - React type of Stencil Output Target may differ from the React version used in the Nuxt.js project, this can be ignored.
+    // @ts-ignore - ignore potential React type mismatches between the Stencil Output Target and your project.
     react: React,
     events: {} as MhCalendarHeaderEvents,
     defineCustomElement: defineMhCalendarHeader
@@ -92,7 +92,7 @@ export type MhCalendarMonthEvents = NonNullable<unknown>;
 export const MhCalendarMonth: StencilReactComponent<MhCalendarMonthElement, MhCalendarMonthEvents> = /*@__PURE__*/ createComponent<MhCalendarMonthElement, MhCalendarMonthEvents>({
     tagName: 'mh-calendar-month',
     elementClass: MhCalendarMonthElement,
-    // @ts-ignore - React type of Stencil Output Target may differ from the React version used in the Nuxt.js project, this can be ignored.
+    // @ts-ignore - ignore potential React type mismatches between the Stencil Output Target and your project.
     react: React,
     events: {} as MhCalendarMonthEvents,
     defineCustomElement: defineMhCalendarMonth
@@ -103,7 +103,7 @@ export type MhCalendarMultiViewEvents = NonNullable<unknown>;
 export const MhCalendarMultiView: StencilReactComponent<MhCalendarMultiViewElement, MhCalendarMultiViewEvents> = /*@__PURE__*/ createComponent<MhCalendarMultiViewElement, MhCalendarMultiViewEvents>({
     tagName: 'mh-calendar-multi-view',
     elementClass: MhCalendarMultiViewElement,
-    // @ts-ignore - React type of Stencil Output Target may differ from the React version used in the Nuxt.js project, this can be ignored.
+    // @ts-ignore - ignore potential React type mismatches between the Stencil Output Target and your project.
     react: React,
     events: {} as MhCalendarMultiViewEvents,
     defineCustomElement: defineMhCalendarMultiView
@@ -114,7 +114,7 @@ export type MhCalendarNavigationEvents = NonNullable<unknown>;
 export const MhCalendarNavigation: StencilReactComponent<MhCalendarNavigationElement, MhCalendarNavigationEvents> = /*@__PURE__*/ createComponent<MhCalendarNavigationElement, MhCalendarNavigationEvents>({
     tagName: 'mh-calendar-navigation',
     elementClass: MhCalendarNavigationElement,
-    // @ts-ignore - React type of Stencil Output Target may differ from the React version used in the Nuxt.js project, this can be ignored.
+    // @ts-ignore - ignore potential React type mismatches between the Stencil Output Target and your project.
     react: React,
     events: {} as MhCalendarNavigationEvents,
     defineCustomElement: defineMhCalendarNavigation
@@ -125,7 +125,7 @@ export type MhCalendarTimeSlotsEvents = NonNullable<unknown>;
 export const MhCalendarTimeSlots: StencilReactComponent<MhCalendarTimeSlotsElement, MhCalendarTimeSlotsEvents> = /*@__PURE__*/ createComponent<MhCalendarTimeSlotsElement, MhCalendarTimeSlotsEvents>({
     tagName: 'mh-calendar-time-slots',
     elementClass: MhCalendarTimeSlotsElement,
-    // @ts-ignore - React type of Stencil Output Target may differ from the React version used in the Nuxt.js project, this can be ignored.
+    // @ts-ignore - ignore potential React type mismatches between the Stencil Output Target and your project.
     react: React,
     events: {} as MhCalendarTimeSlotsEvents,
     defineCustomElement: defineMhCalendarTimeSlots

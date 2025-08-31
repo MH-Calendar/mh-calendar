@@ -5,7 +5,7 @@ export const config: Config = {
   namespace: 'mh-calendar-core',
   outputTargets: [
     reactOutputTarget({
-      outDir: './mh-cal-react',
+      outDir: './mh-calendar-react',
     }),
     {
       type: 'dist-custom-elements',

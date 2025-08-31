@@ -61,6 +61,8 @@ export interface IMHCalendarStore {
   hoursInDay: number;
   getEventById: (id: string) => MHCalendarEvents[];
   getEvents: () => MHCalendarEvents[];
+  nextPeriod: () => void;
+  previousPeriod: () => void;
 }
 
 export interface IMHCalendarReducer {

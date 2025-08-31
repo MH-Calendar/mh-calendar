@@ -9,7 +9,13 @@ const allowedKeys = ['calendarDateRange', 'viewType'] as const;
 type AllowedKeys = (typeof allowedKeys)[number];
 type PublicState = Pick<IMHCalendarState, AllowedKeys>;
 
-const allowedGetters = ['daysInRange', 'getEventById', 'getEvents'] as const;
+const allowedGetters = [
+  'daysInRange',
+  'getEventById',
+  'getEvents',
+  'nextPeriod',
+  'previousPeriod',
+] as const;
 type AllowedGetters = (typeof allowedGetters)[number];
 type PublicGetters = Pick<IMHCalendarStore, AllowedGetters>;
 

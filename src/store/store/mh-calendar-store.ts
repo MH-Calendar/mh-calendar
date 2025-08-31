@@ -5,6 +5,7 @@ import {
   IMHCalendarReducer,
   IMHCalendarState,
   IMHCalendarStore,
+  MHCalendarReducerStoreActions,
   UserErrors,
 } from './mh-calendar-store.types';
 import { stateManager } from '../store';
@@ -122,6 +123,22 @@ export class MHCalendarStore implements IMHCalendarStore {
     return (
       this?.state?.style?.[className as keyof typeof this.state.style] || {}
     );
+  }
+
+  // for now for user api
+
+  public nextPeriod() {
+    this.dispatch({
+      type: MHCalendarReducerStoreActions.NEXT_DATE_RANGE,
+      payload: {},
+    });
+  }
+
+  public previousPeriod() {
+    this.dispatch({
+      type: MHCalendarReducerStoreActions.PREV_DATE_RANGE,
+      payload: {},
+    });
   }
 }
 
