@@ -20,7 +20,7 @@ export class EventUtils {
     event: MHCalendarEvents,
     date: Date
   ): boolean {
-    const {showTimeFrom, showTimeTo} = newMhCalendarStore.state
+    const { showTimeFrom, showTimeTo } = newMhCalendarStore.state;
 
     if (!showTimeFrom || !showTimeTo) return false;
 
@@ -39,15 +39,17 @@ export class EventUtils {
     }
 
     const viewWindowStart = viewDate.set('hour', showTimeFrom).startOf('hour');
-const viewWindowEnd = viewDate.set('hour', showTimeTo).startOf('hour'); // no endOf
+    const viewWindowEnd = viewDate.set('hour', showTimeTo).startOf('hour'); // no endOf
 
-let effectiveEventStartForView =
-  eventStartDate.isAfter(viewWindowStart) ? eventStartDate : viewWindowStart;
+    let effectiveEventStartForView = eventStartDate.isAfter(viewWindowStart)
+      ? eventStartDate
+      : viewWindowStart;
 
-let effectiveEventEndForView =
-  eventEndDate.isBefore(viewWindowEnd) ? eventEndDate : viewWindowEnd;
+    let effectiveEventEndForView = eventEndDate.isBefore(viewWindowEnd)
+      ? eventEndDate
+      : viewWindowEnd;
 
-// Treat end time as exclusive
-return effectiveEventStartForView.isBefore(effectiveEventEndForView);
+    // Treat end time as exclusive
+    return effectiveEventStartForView.isBefore(effectiveEventEndForView);
   }
 }

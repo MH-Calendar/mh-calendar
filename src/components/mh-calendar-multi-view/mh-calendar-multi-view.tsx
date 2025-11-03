@@ -27,6 +27,10 @@ export class MHCalendarMultiView {
     newMhCalendarStore.onChange('calendarDateRange', () => {
       this.updateCSSProperties();
     });
+
+    newMhCalendarStore.onChange('hiddenDays', () => {
+      this.updateCSSProperties();
+    });
   }
 
   render() {

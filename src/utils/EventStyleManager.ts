@@ -12,7 +12,7 @@ const EVENT_MARGIN = 2; // pixels
 
 export class EventStyleManager {
   /**
-   * Calculates optimal width and position for overlapping events
+   * Calculates optimal width and position for overlapping events (side-by-side mode)
    * Based on the maximum number of events that overlap at any given time
    */
   static calculateEventWidth(
@@ -24,6 +24,7 @@ export class EventStyleManager {
         width: `${DEFAULT_EVENT_WIDTH}%`,
         left: '0%',
         marginLeft: '0px',
+        zIndex: 1,
       };
     }
 
@@ -60,6 +61,105 @@ export class EventStyleManager {
       width: `calc(${eventWidth}% - 2px)`, // -2 is margin to event not touching
       left: `${leftPosition}%`,
       marginLeft: '0px',
+      zIndex: 1,
+    };
+  }
+
+  /**
+   * Calculates width and position for overlapping events (overlapping mode)
+   * Ordering rules:
+   * 1) Earlier start time => smaller z-index and closer to the left
+   * 2) If same start time => longer duration => smaller z-index and closer to the left
+   */
+  static calculateEventWidthOverlapping(
+    events: MHCalendarEvents[],
+    currentEventIndex: number
+  ) {
+    const currentEvent = events[currentEventIndex];
+
+    // Find all events that overlap with the current event
+    const overlappingEvents = events.filter((event) =>
+      EventUtils.areEventsOverlapping(currentEvent, event)
+    );
+
+    // Group events by same start time (within 1 minute tolerance)
+    const TOLERANCE_MS = 60 * 1000; // 1 minute
+    const eventsWithSameStartTime = overlappingEvents.filter((event) => {
+      const timeDiff = Math.abs(
+        event.startDate.getTime() - currentEvent.startDate.getTime()
+      );
+      return timeDiff < TOLERANCE_MS;
+    });
+
+    // Sort to determine BASE LEFT OFFSET order:
+    // 1) earlier start first
+    // 2) same start -> longer duration first (longer sits further left)
+    const sortedForLeftOffset = overlappingEvents.sort((a, b) => {
+      const startDiff = a.startDate.getTime() - b.startDate.getTime();
+      if (startDiff !== 0) return startDiff; // earlier first
+
+      const durationA = a.endDate.getTime() - a.startDate.getTime();
+      const durationB = b.endDate.getTime() - b.startDate.getTime();
+      if (durationA !== durationB) return durationB - durationA; // longer first
+
+      return a.id.localeCompare(b.id);
+    });
+
+    // z-index MUST be monotonic with left offset to avoid a lower layer being more to the right
+    // Therefore, use the same ordering as for left offset: earlier first, for same start longer first
+    const zIndexPosition = sortedForLeftOffset.findIndex(
+      (event) => event.id === currentEvent.id
+    );
+    // Higher index (further right) => higher z-index (on top)
+    const zIndex = zIndexPosition + 1; // 1..N
+
+    // Calculate offset and width
+    let offset: number | string = 0;
+    let width = DEFAULT_EVENT_WIDTH;
+
+    // Check if there are events starting at the same time (for percentage-based offset)
+    const hasSameStartTime = eventsWithSameStartTime.length > 1;
+
+    if (hasSameStartTime) {
+      // If events start at the same time, use percentage-based offset with decreasing width
+      // Sort events with same start time by duration: LONGEST first (descending)
+      // Longest event gets left = 0%, shorter events are shifted right
+      const sortedSameStart = eventsWithSameStartTime.sort((a, b) => {
+        const durationA = a.endDate.getTime() - a.startDate.getTime();
+        const durationB = b.endDate.getTime() - b.startDate.getTime();
+        if (durationA !== durationB) return durationB - durationA; // Longer first (descending)
+        // If same duration, sort by id for consistency
+        return a.id.localeCompare(b.id);
+      });
+
+      // Find the position of current event among events with same start time
+      const positionInSameStart = sortedSameStart.findIndex(
+        (event) => event.id === currentEvent.id
+      );
+
+      // Calculate offset and width for events starting at the same time
+      // Position 0 (longest event): left = 0%, width = 100%
+      // Position 1+ (shorter events): shifted right by ~8% each, width decreases by ~6% each
+      const OFFSET_STEP = 8; // Percentage shift for each shorter event
+      const WIDTH_SCALE = 0.94; // Each shorter event is 94% width of the previous
+
+      offset = `${positionInSameStart * OFFSET_STEP}%`;
+      width = DEFAULT_EVENT_WIDTH * Math.pow(WIDTH_SCALE, positionInSameStart);
+    } else {
+      // For overlapping events with different start times:
+      // earlier/longer should be closer to left.
+      const PIXEL_OFFSET_STEP = 5;
+      const positionByLeftOrder = sortedForLeftOffset.findIndex(
+        (event) => event.id === currentEvent.id
+      );
+      offset = `${positionByLeftOrder * PIXEL_OFFSET_STEP}px`;
+    }
+
+    return {
+      width: `${width}%`,
+      left: typeof offset === 'string' ? offset : `${offset}%`,
+      marginLeft: '0px',
+      zIndex: zIndex,
     };
   }
 
@@ -139,7 +239,8 @@ export class EventStyleManager {
     dayHeight: number,
     currentDate?: Date,
     showTimeFrom: number = 10,
-    showTimeTo: number = 24
+    showTimeTo: number = 24,
+    useFullDuration: boolean = false
   ): string {
     if (!currentDate) {
       return '0px';
@@ -187,22 +288,36 @@ export class EventStyleManager {
     const actualEndHour =
       (actualEndMillis - c_day_start_time) / MILLISECONDS_IN_HOUR;
 
-    // Clamp to visible time window
-    const renderStartHour = Math.max(actualStartHour, showTimeFrom);
-    const renderEndHour = Math.min(actualEndHour, showTimeTo);
+    // For dragged events, use full duration; otherwise clamp to visible time window
+    let renderStartHour: number;
+    let renderEndHour: number;
+
+    if (useFullDuration) {
+      // Use actual start/end hours without clamping (but still within day boundaries)
+      // This gives us the full event duration even if it extends beyond visible window
+      renderStartHour = actualStartHour;
+      renderEndHour = actualEndHour;
+    } else {
+      // Clamp to visible time window (for normal displayed events)
+      renderStartHour = Math.max(actualStartHour, showTimeFrom);
+      renderEndHour = Math.min(actualEndHour, showTimeTo);
+    }
 
     const durationInHours = renderEndHour - renderStartHour;
     if (durationInHours <= 0) {
       return '0px';
     }
 
-    // Use available height (not total dayHeight) for calculation
+    // Always use visible hours per day for hourHeight calculation
+    // This ensures consistent scaling regardless of event duration
     const hourHeight = availableHeight / visibleHoursPerDay;
+
+    // Calculate event height based on duration and hourHeight
     const eventHeight = durationInHours * hourHeight;
 
     // -2 added to have a margin, to events not touch when start
     // just after each other
-    return `${Math.round(eventHeight) - 2}px`;
+    return `${Math.round(eventHeight) + 1}px`;
   }
 
   static calculateEventTopPosition(
@@ -214,7 +329,7 @@ export class EventStyleManager {
     if (isAllDayEvent) {
       return 0;
     }
-    const topMarginOfAllDayEvents = newMhCalendarStore.headerMargin ;
+    const topMarginOfAllDayEvents = newMhCalendarStore.headerMargin;
 
     // If event start before the day, return top calendar position
     if (

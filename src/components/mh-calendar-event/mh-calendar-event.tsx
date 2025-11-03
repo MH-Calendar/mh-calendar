@@ -7,6 +7,7 @@ import {
 import newMhCalendarStore from '../../store/store/mh-calendar-store';
 import { EventStyleManager } from '../../utils/EventStyleManager';
 import { DEFAULT_MONTH_EVENT_HEIGHT } from '../../defaults';
+import { EventModalHelper } from '../../utils/EventModalHelper';
 
 @Component({
   tag: 'mh-calendar-event',
@@ -26,9 +27,40 @@ export class MHCalendarEvent {
   private onEventClick(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
-    if (newMhCalendarStore.state.onEventClick && this.event) {
-      newMhCalendarStore.state.onEventClick(this.event);
-    }
+
+    if (!this.event || !this.el) return;
+
+    // Open modal for event editing
+    const rect = this.el.getBoundingClientRect();
+
+    const modalContent = EventModalHelper.createEventModalContent(
+      this.event,
+      false, // isNewEvent
+      (updatedEvent) => {
+        // Update event via callback
+        if (typeof newMhCalendarStore.state.onEventUpdated === 'function') {
+          newMhCalendarStore.state.onEventUpdated(updatedEvent);
+        }
+        // Also call original onEventClick if provided
+        if (typeof newMhCalendarStore.state.onEventClick === 'function') {
+          newMhCalendarStore.state.onEventClick(updatedEvent);
+        }
+      },
+      () => {
+        // Cancel - just call original onEventClick if provided
+        if (
+          typeof newMhCalendarStore.state.onEventClick === 'function' &&
+          this.event
+        ) {
+          newMhCalendarStore.state.onEventClick(this.event);
+        }
+      }
+    );
+
+    newMhCalendarStore.openModal(modalContent, {
+      rect,
+      alignment: 'right',
+    });
   }
 
   private onRightEventClick(event: MouseEvent) {
@@ -49,9 +81,10 @@ export class MHCalendarEvent {
           this.event?.startDate,
           this.event?.endDate,
           this.dayHeight,
-          this.isDragged ? this.event?.endDate : this.dayOfRendering,
+          this.dayOfRendering, // Always use dayOfRendering, not endDate
           newMhCalendarStore.state.showTimeFrom,
-          newMhCalendarStore.state.showTimeTo
+          newMhCalendarStore.state.showTimeTo,
+          this.isDragged // useFullDuration = true when dragged
         );
     return height;
   }
@@ -96,8 +129,50 @@ export class MHCalendarEvent {
     this.el.style.opacity = '1';
   };
 
+  private getEventColor(): string {
+    // Use event-specific color if provided, otherwise use default from CSS variable
+    if (this.event?.color) {
+      return this.event.color;
+    }
+
+    // Fallback to default CSS variable
+    const defaultColor = getComputedStyle(document.documentElement)
+      .getPropertyValue('--eventBackgroundColor')
+      .trim();
+
+    return defaultColor || '#00b536'; // Ultimate fallback to DEFAULT_THEME_COLOR
+  }
+
   private getMHCalendarEventStyle() {
     if (!this.el || !this.event || !newMhCalendarStore.state.viewType) return;
+
+    const eventColor = this.getEventColor();
+
+    // When dragged, ensure full opacity for the preview (original item fades separately)
+    if (this.isDragged && !this.event?.allDay) {
+      return {
+        height: '100%',
+        width: '100%',
+        position: 'relative',
+        opacity: '1',
+        backgroundColor: eventColor,
+        borderRadius: '5px', // Ensure border radius is visible
+        overflow: 'hidden', // Ensure content stays within rounded corners
+        ...newMhCalendarStore.getInlineStyleForClass('mhCalendarEvent'),
+      };
+    }
+
+    // Dragged all-day preview should also be fully opaque and match regular styling
+    if (this.isDragged && this.event?.allDay) {
+      return {
+        height: `${DEFAULT_MONTH_EVENT_HEIGHT}px`,
+        width: '100%',
+        opacity: '1',
+        padding: '4px',
+        fontSize: '10px',
+        backgroundColor: eventColor,
+      };
+    }
 
     const shouldEventHaveCustomHeight =
       [IMHCalendarViewType.WEEK, IMHCalendarViewType.DAY].includes(
@@ -108,6 +183,8 @@ export class MHCalendarEvent {
       return {
         height: this.calculateEventHeight(),
         maxHeight: this.calculateEventHeight(),
+        position: 'relative',
+        backgroundColor: eventColor,
       };
     }
 
@@ -117,7 +194,7 @@ export class MHCalendarEvent {
       opacity: this.event?.isHidden ? '0.1' : '1',
       padding: '4px',
       fontSize: '10px',
-      backgroundColor: 'transparent',
+      backgroundColor: eventColor,
     };
   }
 
@@ -132,6 +209,7 @@ export class MHCalendarEvent {
     ) {
       return <mh-calendar-event-full event={this.event} />;
     }
+
     return <mh-calendar-event-small event={this.event} />;
   }
 
@@ -178,8 +256,14 @@ export class MHCalendarEvent {
         }}
       >
         {this.getCorrectEventUI()}
-        {/* <div id={`portal-${this.event.id}-${this.instanceOfEvent}`} style={{width: '100%', height: '100%'}}></div>
-         */}
+        {!this.event?.allDay && (
+          <mh-calendar-resize-event-handler
+            eventId={this.event?.id ?? ''}
+            eventHeight={this.calculateEventHeight() ?? '0px'}
+            eventEndDate={this.event?.endDate}
+            eventStartDate={this.event?.startDate}
+          />
+        )}
       </div>
     );
   }

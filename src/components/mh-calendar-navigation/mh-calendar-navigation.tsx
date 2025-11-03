@@ -123,6 +123,12 @@ export class MhCalendarNavigation {
             >
               Month
             </button>
+            <button
+              class={`view-switch-btn ${state.viewType === IMHCalendarViewType.AGENDA ? 'active' : ''}`}
+              onClick={() => this.onViewChange(IMHCalendarViewType.AGENDA)}
+            >
+              Agenda
+            </button>
           </div>
         )}
       </div>

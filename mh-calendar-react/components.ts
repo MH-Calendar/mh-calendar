@@ -9,14 +9,22 @@
 
 import type { StencilReactComponent } from '@stencil/react-output-target/runtime';
 import { createComponent } from '@stencil/react-output-target/runtime';
+import { MhCalendarAgendaView as MhCalendarAgendaViewElement, defineCustomElement as defineMhCalendarAgendaView } from "mh-calendar-core/dist/components/mh-calendar-agenda-view.js";
+import { MhCalendarDayAllDayEventsHolder as MhCalendarDayAllDayEventsHolderElement, defineCustomElement as defineMhCalendarDayAllDayEventsHolder } from "mh-calendar-core/dist/components/mh-calendar-day-all-day-events-holder.js";
+import { MhCalendarDayDraggedEventPreview as MhCalendarDayDraggedEventPreviewElement, defineCustomElement as defineMhCalendarDayDraggedEventPreview } from "mh-calendar-core/dist/components/mh-calendar-day-dragged-event-preview.js";
+import { MhCalendarDayMonthViewEvents as MhCalendarDayMonthViewEventsElement, defineCustomElement as defineMhCalendarDayMonthViewEvents } from "mh-calendar-core/dist/components/mh-calendar-day-month-view-events.js";
+import { MhCalendarDayTimeViewEvents as MhCalendarDayTimeViewEventsElement, defineCustomElement as defineMhCalendarDayTimeViewEvents } from "mh-calendar-core/dist/components/mh-calendar-day-time-view-events.js";
+import { MhCalendarDayTimeViewOverlays as MhCalendarDayTimeViewOverlaysElement, defineCustomElement as defineMhCalendarDayTimeViewOverlays } from "mh-calendar-core/dist/components/mh-calendar-day-time-view-overlays.js";
 import { MhCalendarDay as MhCalendarDayElement, defineCustomElement as defineMhCalendarDay } from "mh-calendar-core/dist/components/mh-calendar-day.js";
 import { MhCalendarEventFull as MhCalendarEventFullElement, defineCustomElement as defineMhCalendarEventFull } from "mh-calendar-core/dist/components/mh-calendar-event-full.js";
 import { MhCalendarEventSmall as MhCalendarEventSmallElement, defineCustomElement as defineMhCalendarEventSmall } from "mh-calendar-core/dist/components/mh-calendar-event-small.js";
 import { MhCalendarEvent as MhCalendarEventElement, defineCustomElement as defineMhCalendarEvent } from "mh-calendar-core/dist/components/mh-calendar-event.js";
 import { MhCalendarHeader as MhCalendarHeaderElement, defineCustomElement as defineMhCalendarHeader } from "mh-calendar-core/dist/components/mh-calendar-header.js";
+import { MhCalendarModal as MhCalendarModalElement, defineCustomElement as defineMhCalendarModal } from "mh-calendar-core/dist/components/mh-calendar-modal.js";
 import { MhCalendarMonth as MhCalendarMonthElement, defineCustomElement as defineMhCalendarMonth } from "mh-calendar-core/dist/components/mh-calendar-month.js";
 import { MhCalendarMultiView as MhCalendarMultiViewElement, defineCustomElement as defineMhCalendarMultiView } from "mh-calendar-core/dist/components/mh-calendar-multi-view.js";
 import { MhCalendarNavigation as MhCalendarNavigationElement, defineCustomElement as defineMhCalendarNavigation } from "mh-calendar-core/dist/components/mh-calendar-navigation.js";
+import { MhCalendarResizeEventHandler as MhCalendarResizeEventHandlerElement, defineCustomElement as defineMhCalendarResizeEventHandler } from "mh-calendar-core/dist/components/mh-calendar-resize-event-handler.js";
 import { MhCalendarTimeSlots as MhCalendarTimeSlotsElement, defineCustomElement as defineMhCalendarTimeSlots } from "mh-calendar-core/dist/components/mh-calendar-time-slots.js";
 import { MhCalendar as MhCalendarElement, defineCustomElement as defineMhCalendar } from "mh-calendar-core/dist/components/mh-calendar.js";
 import React from 'react';
@@ -32,6 +40,17 @@ export const MhCalendar: StencilReactComponent<MhCalendarElement, MhCalendarEven
     defineCustomElement: defineMhCalendar
 });
 
+export type MhCalendarAgendaViewEvents = NonNullable<unknown>;
+
+export const MhCalendarAgendaView: StencilReactComponent<MhCalendarAgendaViewElement, MhCalendarAgendaViewEvents> = /*@__PURE__*/ createComponent<MhCalendarAgendaViewElement, MhCalendarAgendaViewEvents>({
+    tagName: 'mh-calendar-agenda-view',
+    elementClass: MhCalendarAgendaViewElement,
+    // @ts-ignore - ignore potential React type mismatches between the Stencil Output Target and your project.
+    react: React,
+    events: {} as MhCalendarAgendaViewEvents,
+    defineCustomElement: defineMhCalendarAgendaView
+});
+
 export type MhCalendarDayEvents = NonNullable<unknown>;
 
 export const MhCalendarDay: StencilReactComponent<MhCalendarDayElement, MhCalendarDayEvents> = /*@__PURE__*/ createComponent<MhCalendarDayElement, MhCalendarDayEvents>({
@@ -41,6 +60,61 @@ export const MhCalendarDay: StencilReactComponent<MhCalendarDayElement, MhCalend
     react: React,
     events: {} as MhCalendarDayEvents,
     defineCustomElement: defineMhCalendarDay
+});
+
+export type MhCalendarDayAllDayEventsHolderEvents = NonNullable<unknown>;
+
+export const MhCalendarDayAllDayEventsHolder: StencilReactComponent<MhCalendarDayAllDayEventsHolderElement, MhCalendarDayAllDayEventsHolderEvents> = /*@__PURE__*/ createComponent<MhCalendarDayAllDayEventsHolderElement, MhCalendarDayAllDayEventsHolderEvents>({
+    tagName: 'mh-calendar-day-all-day-events-holder',
+    elementClass: MhCalendarDayAllDayEventsHolderElement,
+    // @ts-ignore - ignore potential React type mismatches between the Stencil Output Target and your project.
+    react: React,
+    events: {} as MhCalendarDayAllDayEventsHolderEvents,
+    defineCustomElement: defineMhCalendarDayAllDayEventsHolder
+});
+
+export type MhCalendarDayDraggedEventPreviewEvents = NonNullable<unknown>;
+
+export const MhCalendarDayDraggedEventPreview: StencilReactComponent<MhCalendarDayDraggedEventPreviewElement, MhCalendarDayDraggedEventPreviewEvents> = /*@__PURE__*/ createComponent<MhCalendarDayDraggedEventPreviewElement, MhCalendarDayDraggedEventPreviewEvents>({
+    tagName: 'mh-calendar-day-dragged-event-preview',
+    elementClass: MhCalendarDayDraggedEventPreviewElement,
+    // @ts-ignore - ignore potential React type mismatches between the Stencil Output Target and your project.
+    react: React,
+    events: {} as MhCalendarDayDraggedEventPreviewEvents,
+    defineCustomElement: defineMhCalendarDayDraggedEventPreview
+});
+
+export type MhCalendarDayMonthViewEventsEvents = NonNullable<unknown>;
+
+export const MhCalendarDayMonthViewEvents: StencilReactComponent<MhCalendarDayMonthViewEventsElement, MhCalendarDayMonthViewEventsEvents> = /*@__PURE__*/ createComponent<MhCalendarDayMonthViewEventsElement, MhCalendarDayMonthViewEventsEvents>({
+    tagName: 'mh-calendar-day-month-view-events',
+    elementClass: MhCalendarDayMonthViewEventsElement,
+    // @ts-ignore - ignore potential React type mismatches between the Stencil Output Target and your project.
+    react: React,
+    events: {} as MhCalendarDayMonthViewEventsEvents,
+    defineCustomElement: defineMhCalendarDayMonthViewEvents
+});
+
+export type MhCalendarDayTimeViewEventsEvents = NonNullable<unknown>;
+
+export const MhCalendarDayTimeViewEvents: StencilReactComponent<MhCalendarDayTimeViewEventsElement, MhCalendarDayTimeViewEventsEvents> = /*@__PURE__*/ createComponent<MhCalendarDayTimeViewEventsElement, MhCalendarDayTimeViewEventsEvents>({
+    tagName: 'mh-calendar-day-time-view-events',
+    elementClass: MhCalendarDayTimeViewEventsElement,
+    // @ts-ignore - ignore potential React type mismatches between the Stencil Output Target and your project.
+    react: React,
+    events: {} as MhCalendarDayTimeViewEventsEvents,
+    defineCustomElement: defineMhCalendarDayTimeViewEvents
+});
+
+export type MhCalendarDayTimeViewOverlaysEvents = NonNullable<unknown>;
+
+export const MhCalendarDayTimeViewOverlays: StencilReactComponent<MhCalendarDayTimeViewOverlaysElement, MhCalendarDayTimeViewOverlaysEvents> = /*@__PURE__*/ createComponent<MhCalendarDayTimeViewOverlaysElement, MhCalendarDayTimeViewOverlaysEvents>({
+    tagName: 'mh-calendar-day-time-view-overlays',
+    elementClass: MhCalendarDayTimeViewOverlaysElement,
+    // @ts-ignore - ignore potential React type mismatches between the Stencil Output Target and your project.
+    react: React,
+    events: {} as MhCalendarDayTimeViewOverlaysEvents,
+    defineCustomElement: defineMhCalendarDayTimeViewOverlays
 });
 
 export type MhCalendarEventEvents = NonNullable<unknown>;
@@ -87,6 +161,17 @@ export const MhCalendarHeader: StencilReactComponent<MhCalendarHeaderElement, Mh
     defineCustomElement: defineMhCalendarHeader
 });
 
+export type MhCalendarModalEvents = NonNullable<unknown>;
+
+export const MhCalendarModal: StencilReactComponent<MhCalendarModalElement, MhCalendarModalEvents> = /*@__PURE__*/ createComponent<MhCalendarModalElement, MhCalendarModalEvents>({
+    tagName: 'mh-calendar-modal',
+    elementClass: MhCalendarModalElement,
+    // @ts-ignore - ignore potential React type mismatches between the Stencil Output Target and your project.
+    react: React,
+    events: {} as MhCalendarModalEvents,
+    defineCustomElement: defineMhCalendarModal
+});
+
 export type MhCalendarMonthEvents = NonNullable<unknown>;
 
 export const MhCalendarMonth: StencilReactComponent<MhCalendarMonthElement, MhCalendarMonthEvents> = /*@__PURE__*/ createComponent<MhCalendarMonthElement, MhCalendarMonthEvents>({
@@ -118,6 +203,17 @@ export const MhCalendarNavigation: StencilReactComponent<MhCalendarNavigationEle
     react: React,
     events: {} as MhCalendarNavigationEvents,
     defineCustomElement: defineMhCalendarNavigation
+});
+
+export type MhCalendarResizeEventHandlerEvents = NonNullable<unknown>;
+
+export const MhCalendarResizeEventHandler: StencilReactComponent<MhCalendarResizeEventHandlerElement, MhCalendarResizeEventHandlerEvents> = /*@__PURE__*/ createComponent<MhCalendarResizeEventHandlerElement, MhCalendarResizeEventHandlerEvents>({
+    tagName: 'mh-calendar-resize-event-handler',
+    elementClass: MhCalendarResizeEventHandlerElement,
+    // @ts-ignore - ignore potential React type mismatches between the Stencil Output Target and your project.
+    react: React,
+    events: {} as MhCalendarResizeEventHandlerEvents,
+    defineCustomElement: defineMhCalendarResizeEventHandler
 });
 
 export type MhCalendarTimeSlotsEvents = NonNullable<unknown>;

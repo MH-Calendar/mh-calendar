@@ -10,7 +10,8 @@
 
 .time__holder {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: center;
   overflow: visible;
   position: relative;
   height: var(--time-slots-length);
@@ -42,8 +43,38 @@
   font-size: 12px;
   font-family: system-ui;
   color: #6b7280;
+}
 
-  padding: 10px 20px;
+.mhCalendarWeek__border__timeContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+}
+
+.mhCalendarWeek__border__mainTime {
+  font-weight: 500;
+  color: #374151;
+}
+
+.mhCalendarWeek__border__additionalTimezones {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 10px;
+}
+
+.mhCalendarWeek__border__additionalTime {
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mhCalendarWeek__border__tzAbbr {
+  font-size: 9px;
+  color: #d1d5db;
+  font-weight: 500;
 }
 
 .mhCalendarWeek__borders {
@@ -61,5 +92,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  text-align: center;
   font-family: system-ui;
 }

@@ -3,11 +3,20 @@ import newMhCalendarStore from '../store/store/mh-calendar-store';
 import { MHCalendarEvents } from '../types';
 import { DateUtils } from './DateUtils';
 import { EventUtils } from './EventUtils';
+import { IMHCalendarEvent } from '../components';
 
 type EventBuilderMapById = Map<string, MHCalendarEvents>;
 export type EventBuilderMapByDate = Map<string, EventBuilderMapById>;
 
 export class EventManager {
+  /**
+   * Generate a unique id for a newly created event
+   */
+  public static generateEventId(): string {
+    const randomPart = Math.random().toString(36).substr(2, 9);
+    return `event-${Date.now()}-${randomPart}`;
+  }
+
   /**
    * Get all date keys for a date range
    */
@@ -148,7 +157,7 @@ export class EventManager {
     const dateKey =
       typeof date === 'string' ? date : DateUtils.convertDateToString(date);
     const dailyEvents = events.get(dateKey);
- 
+
     if (dailyEvents) {
       return Array.from(dailyEvents.values()).filter((event) => {
         return EventUtils.shouldEventBeDisplayedInTimeView(
@@ -165,28 +174,31 @@ export class EventManager {
    */
   public static handleEventDateChange(
     newStartDate: Date,
-    newEndDate: Date
+    newEndDate: Date,
+    event?: IMHCalendarEvent
   ): void {
-    const {reactiveEvents, draggedEvent} = newMhCalendarStore.state;
+    let originalEvent: IMHCalendarEvent | null = event ?? null;
+    const { reactiveEvents, draggedEvent } = newMhCalendarStore.state;
 
-    if (!draggedEvent?.id) {
-      console.error('No dragged event found');
-      return;
-    }
+    if (!event) {
+      if (!draggedEvent?.id) {
+        console.error('No dragged event found');
+        return;
+      }
 
-    // Find the original event data (get from any date key that contains it)
-    let originalEvent: MHCalendarEvents | null = null;
-    for (const [_, eventsMap] of reactiveEvents) {
-      if (eventsMap.has(draggedEvent.id)) {
-        originalEvent = eventsMap.get(draggedEvent.id)!;
-        break;
+      // Find the original event data (get from any date key that contains it)
+      for (const [_, eventsMap] of reactiveEvents) {
+        if (eventsMap.has(draggedEvent.id)) {
+          originalEvent = eventsMap.get(draggedEvent.id)!;
+          break;
+        }
       }
     }
-
     if (!originalEvent) {
       console.error('Event not found in reactive events');
       return;
     }
+
     // Store original date range for cleanup
     const originalStartDate = new Date(originalEvent.startDate);
     const originalEndDate = new Date(originalEvent.endDate);
@@ -200,7 +212,7 @@ export class EventManager {
     originalDateKeys.forEach((dateKey) => {
       if (reactiveEvents.has(dateKey)) {
         const eventsMap = reactiveEvents.get(dateKey)!;
-        eventsMap.delete(draggedEvent.id);
+        eventsMap.delete(originalEvent.id);
         // Clean up empty date entries
         if (eventsMap.size === 0) {
           reactiveEvents.delete(dateKey);

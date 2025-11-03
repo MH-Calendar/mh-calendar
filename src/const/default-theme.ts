@@ -15,6 +15,11 @@ export const DEFAULT_THEME = {
     timeSlotWidth: TIME_HOLDER_WIDTH,
     bordersColor: BORDERS_COLOR,
     eventBackgroundColor: DEFAULT_THEME_COLOR,
+    eventResizeHandleColor: DEFAULT_THEME_COLOR,
+    eventTimeLabelBg: '#fff',
+    eventTimeLabelColor: '#222',
+    eventTimeDiffColor: '#3578fa',
+    nonBusinessHoursOverlayColor: 'rgba(0, 0, 0, 0.03)',
     headerTodayBackgroundColor: DEFAULT_THEME_COLOR,
     currentTimeColor: CURRENT_TIME_LINE_COLOR,
 

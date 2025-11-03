@@ -10,15 +10,14 @@ import {
 import dayjs from 'dayjs';
 import { DayUtils } from './mh-calendar-day.utils';
 import { MHCalendarEvents } from '../../types';
-import { DEFAULT_MONTH_EVENT_HEIGHT, SHOW_DATE_ON_DAY } from '../../defaults';
-import {
-  IMHCalendarViewType,
-  MHCalendarReducerStoreActions,
-} from '../../store/store/mh-calendar-store.types';
+import { SHOW_DATE_ON_DAY } from '../../defaults';
+import { IMHCalendarViewType } from '../../store/store/mh-calendar-store.types';
 import newMhCalendarStore from '../../store/store/mh-calendar-store';
 import { EventManager } from '../../utils/EventManager';
 import { DateUtils } from '../../utils/DateUtils';
-import { EventStyleManager } from '../../utils/EventStyleManager';
+import { DragDropHandler, DragDropState } from '../../utils/DragDropHandler';
+import { MonthViewCalculator } from '../../utils/MonthViewCalculator';
+import { DayClickHandler } from '../../utils/DayClickHandler';
 
 @Component({
   tag: 'mh-calendar-day',
@@ -34,156 +33,71 @@ export class MHCalendarDay {
   @State() currentTimePosition?: { top: string };
   @State() groupedEvents: Map<string, MHCalendarEvents[]> = new Map();
   @State() allDayEvents: MHCalendarEvents[] = [];
-  @State() isDraggedOver: number | null = null;
+  @State() dragDropState: DragDropState = {
+    isDraggedOver: null,
+    isDraggedOverAllDay: false,
+    isDraggedOverBlocked: false,
+    draggedOverOffsetY: null,
+    isOverTarget: false,
+    entered: false,
+  };
   @State() isDayHovered: boolean = false;
-  @State() entered: boolean = false;
+  @State() maxVisibleEventsInMonthView: number = 3; // Default: start with conservative value
 
   @Element() el?: HTMLElement;
 
-  // Performance optimization properties
-  private targetElement: HTMLElement | null = null;
-  private targetRect: DOMRect | null = null;
-  private lastProcessedTime: number = 0;
-  private readonly THROTTLE_MS = 16; // ~60fps
+  // Drag and drop handler instance
+  private dragDropHandler!: DragDropHandler; // Initialized in componentWillLoad
   private intervalId?: number;
   private storeUnsubscribers: (() => void)[] = [];
-  private isOverTarget: boolean = false;
-  private draggedOverOffsetY: number | null = null;
 
-  // Consolidated drag processing logic
   private processDragPosition = (clientY: number): void => {
-    const target = this.getTargetElement();
-    if (!target) return;
-
-    const newRect = target.getBoundingClientRect();
-    const touchOffsetY = clientY - newRect.top;
-    // Early return if position hasn't changed significantly
-    if (
-      this.draggedOverOffsetY !== null &&
-      Math.abs(touchOffsetY - this.draggedOverOffsetY) < 2
-    ) {
-      return;
-    }
-
-    if (!this.calendarDayElementHeight) {
-      throw new Error('Init error');
-    }
-
-    const calcBlockPosition = DayUtils.getDragEventTopPosition(
-      touchOffsetY,
-      this.calendarDayElementHeight
+    const newState = this.dragDropHandler.processDragPosition(
+      clientY,
+      this.dragDropState
     );
-    // Only update if position actually changed
-    if (this.isDraggedOver !== calcBlockPosition) {
-      this.draggedOverOffsetY = touchOffsetY;
-      this.isDraggedOver = calcBlockPosition;
+    if (newState !== this.dragDropState) {
+      this.dragDropState = newState;
     }
   };
 
   private dispatchDropEvent = (clientY: number): void => {
-    const target = this.getTargetElement();
-    if (!target) return;
-
-    const rect = target.getBoundingClientRect();
-    const dropOffsetY = clientY - rect.top;
-
-    if (!this.calendarDayElementHeight) {
-      throw new Error('Init error');
-    }
-
-    const dropTopPosition = DayUtils.getDragEventTopPosition(
-      dropOffsetY,
-      this.calendarDayElementHeight
+    this.dragDropHandler.dispatchDropEvent(
+      clientY,
+      this.el || null,
+      this.showCurrentDate
     );
-    newMhCalendarStore.dispatch({
-      type: MHCalendarReducerStoreActions.EVENT_DROP,
-      payload: {
-        topPosition: dropTopPosition,
-        date: this.day,
-      },
-    });
-
-    this.resetDragState();
+    this.dragDropState = this.dragDropHandler.resetDragState();
   };
 
   private resetDragState = (): void => {
-    this.isDraggedOver = null;
-    this.draggedOverOffsetY = null;
-    this.isOverTarget = false;
-    this.entered = false;
+    this.dragDropState = this.dragDropHandler.resetDragState();
   };
-
-  // Helper methods
-  private getTargetElement(): HTMLElement | null {
-    if (!this.targetElement) {
-      this.targetElement = this.el?.querySelector(
-        '.mhCalendarDay'
-      ) as HTMLElement;
-    }
-    return this.targetElement;
-  }
-
-  private updateTargetRect(): DOMRect | null {
-    const target = this.getTargetElement();
-    if (target) {
-      this.targetRect = target.getBoundingClientRect();
-    }
-    return this.targetRect;
-  }
-
-  private isPointInside(
-    clientX: number,
-    clientY: number,
-    rect: DOMRect
-  ): boolean {
-    return (
-      clientX >= rect.left &&
-      clientX <= rect.right &&
-      clientY >= rect.top &&
-      clientY <= rect.bottom
-    );
-  }
 
   // Touch event handlers
   @Listen('touchmove', { target: 'window' })
   handleTouchMove(e: TouchEvent): void {
-    const now = performance.now();
-    if (now - this.lastProcessedTime < this.THROTTLE_MS) {
-      return;
-    }
-    this.lastProcessedTime = now;
-
     if (!this.el) return;
 
-    const touch = e.touches[0];
-    if (!touch) return;
-
-    const rect = this.targetRect || this.updateTargetRect();
-    if (!rect) return;
-
-    const isInside = this.isPointInside(touch.clientX, touch.clientY, rect);
-
-    if (isInside) {
-      this.isOverTarget = true;
-      this.entered = true;
-      this.processDragPosition(touch.clientY);
-    } else if (!isInside && this.isOverTarget) {
-      this.resetDragState();
+    const newState = this.dragDropHandler.handleTouchMove(
+      e,
+      this.dragDropState
+    );
+    if (newState !== this.dragDropState) {
+      this.dragDropState = newState;
     }
   }
 
   @Listen('touchend', { target: 'window' })
   handleTouchEnd(e: TouchEvent): void {
-    if (!this.el || !this.isOverTarget) return;
-
-    const touch = e.changedTouches[0];
-    if (!touch) return;
+    if (!this.el || !this.dragDropState.isOverTarget) return;
 
     try {
-      this.dispatchDropEvent(touch.clientY);
+      this.dragDropHandler.handleTouchEnd(e, this.el, this.showCurrentDate);
+      this.dragDropState = this.dragDropHandler.resetDragState();
     } catch (error) {
       console.error('Error handling touch end:', error);
-      this.resetDragState();
+      this.dragDropState = this.dragDropHandler.resetDragState();
     }
   }
 
@@ -209,12 +123,16 @@ export class MHCalendarDay {
       this.isToday = DateUtils.isToday(newDay);
       this.getGroupedEvents();
       this.updateCurrentTimePosition();
-      this.targetRect = null; // Invalidate cached rect
+      this.dragDropHandler.updateDay(newDay);
     }
   }
 
   componentWillLoad(): void {
     this.calendarDayElementHeight = 600; // Default fallback
+    this.dragDropHandler = new DragDropHandler(
+      this.day,
+      this.calendarDayElementHeight
+    );
 
     if (this.day) {
       this.isToday = DateUtils.isToday(this.day);
@@ -225,7 +143,16 @@ export class MHCalendarDay {
   componentDidLoad(): void {
     this.calendarDayElementHeight = this.el?.offsetHeight || 600;
     newMhCalendarStore.state.heightOfCalendarDay = this.el?.offsetHeight || 600;
+    this.dragDropHandler.updateHeight(this.calendarDayElementHeight);
+
+    // Set target element for drag handler
+    const targetElement = this.el?.querySelector(
+      '.mhCalendarDay'
+    ) as HTMLElement;
+    this.dragDropHandler.setTargetElement(targetElement || null);
+
     this.updateCurrentTimePosition();
+    this.calculateMaxVisibleEventsInMonthView();
     this.setupStoreSubscriptions();
     this.startTimeInterval();
   }
@@ -234,25 +161,35 @@ export class MHCalendarDay {
     const newHeight = this.el?.offsetHeight || 600;
     if (newHeight !== this.calendarDayElementHeight) {
       this.calendarDayElementHeight = newHeight;
+      this.dragDropHandler.updateHeight(this.calendarDayElementHeight);
       this.updateCurrentTimePosition();
-      this.targetRect = null; // Invalidate cached rect
+      this.calculateMaxVisibleEventsInMonthView();
       newMhCalendarStore.state.heightOfCalendarDay =
         this.el?.offsetHeight || 600;
+    } else {
+      // Recalculate even if height didn't change (view type might have changed)
+      this.calculateMaxVisibleEventsInMonthView();
     }
   }
 
   private setupStoreSubscriptions(): void {
     newMhCalendarStore.onChange('calendarDateRange', () => {
       this.getGroupedEvents();
+      this.calculateMaxVisibleEventsInMonthView();
     });
 
     newMhCalendarStore.onChange('reactiveEvents', () => {
       this.getGroupedEvents();
+      // Recalculate max events when events change
+      setTimeout(() => {
+        this.calculateMaxVisibleEventsInMonthView();
+      }, 50);
     });
 
     newMhCalendarStore.onChange('viewType', () => {
       this.getGroupedEvents();
       this.updateCurrentTimePosition();
+      this.calculateMaxVisibleEventsInMonthView();
     });
   }
 
@@ -279,29 +216,32 @@ export class MHCalendarDay {
     }
   }
 
+  /**
+   * Calculates the maximum number of events that can fit in month view
+   * based on available height in the day cell
+   */
+  private calculateMaxVisibleEventsInMonthView(): void {
+    if (
+      !this.el ||
+      !newMhCalendarStore.state.viewType ||
+      newMhCalendarStore.state.viewType !== IMHCalendarViewType.MONTH
+    ) {
+      return;
+    }
+
+    // Use setTimeout to ensure calculation happens after layout is complete
+    setTimeout(() => {
+      if (!this.el) return;
+      this.maxVisibleEventsInMonthView =
+        MonthViewCalculator.calculateMaxVisibleEvents(
+          this.el,
+          this.showCurrentDate
+        );
+    }, 0);
+  }
+
   private onDayClick = (event: MouseEvent, isContext = false): void => {
-    if (!this.el || !this.day) return;
-
-    event.preventDefault();
-    event.stopPropagation();
-
-    const exactDateUserClicked = DateUtils.getExactDateBasedOnUserPosition(
-      event.clientY - this.el.getBoundingClientRect().top,
-      this.day
-    );
-
-    if (
-      !isContext &&
-      typeof newMhCalendarStore.state.onDayClick === 'function'
-    ) {
-      newMhCalendarStore.state.onDayClick(exactDateUserClicked);
-    }
-    if (
-      isContext &&
-      typeof newMhCalendarStore.state.onRightDayClick === 'function'
-    ) {
-      newMhCalendarStore.state.onRightDayClick(exactDateUserClicked);
-    }
+    DayClickHandler.handleDayClick(event, this.el || null, this.day, isContext);
   };
 
   disconnectedCallback(): void {
@@ -311,63 +251,6 @@ export class MHCalendarDay {
 
     this.storeUnsubscribers.forEach((unsubscribe) => unsubscribe());
     this.storeUnsubscribers = [];
-
-    this.targetElement = null;
-    this.targetRect = null;
-  }
-
-  // Styling methods
-  private getEventHolderStyle(
-    eventTopPosition: number,
-    positionStyle: any
-  ): any {
-    if (!newMhCalendarStore.state.viewType) return;
-
-    const isTimeView = [
-      IMHCalendarViewType.DAY,
-      IMHCalendarViewType.WEEK,
-    ].includes(newMhCalendarStore.state.viewType);
-
-    if (isTimeView) {
-      return {
-        overflow: 'hidden',
-        position: 'absolute',
-        left: 0,
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        top: `${eventTopPosition}px`,
-        ...positionStyle,
-      };
-    }
-
-    return {
-      height: `${DEFAULT_MONTH_EVENT_HEIGHT}px`,
-      width: '100%',
-    };
-  }
-
-  private getStylesForDraggedEvent(): any {
-    if (!newMhCalendarStore.state.viewType) return;
-
-    const isTimeView = [
-      IMHCalendarViewType.DAY,
-      IMHCalendarViewType.WEEK,
-    ].includes(newMhCalendarStore.state.viewType);
-
-    if (isTimeView) {
-      return {
-        width: '100%',
-        position: 'absolute',
-        top: `${this.isDraggedOver}px`,
-      };
-    }
-
-    return {
-      height: '40px',
-      width: '100%',
-    };
   }
 
   render() {
@@ -390,10 +273,21 @@ export class MHCalendarDay {
         class={`mhCalendarDay ${style.join(' ')} ${this.isDayHovered ? 'day__hovered' : ''}`}
         onDragOver={(e) => {
           e.preventDefault();
-          this.processDragPosition(e.clientY);
+          // If not dragging over all day holder, process normal drag
+          if (!this.dragDropState.isDraggedOverAllDay) {
+            this.processDragPosition(e.clientY);
+            this.dragDropState = {
+              ...this.dragDropState,
+              isDraggedOverAllDay: false, // Clear all day preview if dragging elsewhere
+            };
+          }
         }}
         onDragLeave={() => {
-          this.resetDragState();
+          this.isDayHovered = false;
+          // Don't reset if still dragging over all day holder
+          if (!this.dragDropState.isDraggedOverAllDay) {
+            this.resetDragState();
+          }
         }}
         onMouseEnter={() => {
           this.isDayHovered = true;
@@ -411,28 +305,43 @@ export class MHCalendarDay {
           overflowY: newMhCalendarStore.state.makeAllDaysSticky
             ? 'visible'
             : 'hidden',
+          overflowX: 'hidden',
           ...newMhCalendarStore.getInlineStyleForClass('mhCalendarDay'),
         }}
       >
-        {!this.showCurrentDate && newMhCalendarStore.state.showAllDayTasks && (
-          <div
-            class="mhCalendarDay_allDaysEventHolder"
-            style={{
-              position: newMhCalendarStore.state.makeAllDaysSticky
-                ? 'sticky'
-                : 'absolute',
-              height: newMhCalendarStore.state.allDayEventsHeight + 'px',
-              ...newMhCalendarStore.getInlineStyleForClass(
-                'mhCalendarDay_allDaysEventHolder'
-              ),
-            }}
-          >
-            {this.allDayEvents.map((event) => (
-              <mh-calendar-event event={event} />
-            ))}
-          </div>
-        )}
-
+        <mh-calendar-day-all-day-events-holder
+          showCurrentDate={this.showCurrentDate}
+          allDayEvents={this.allDayEvents}
+          dragDropState={this.dragDropState}
+          onDragOver={(e: DragEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Show preview when dragging over all day holder
+            if (newMhCalendarStore.state.draggedEvent) {
+              this.dragDropState = {
+                ...this.dragDropState,
+                isDraggedOverAllDay: true,
+                isDraggedOver: null, // Clear timed event preview
+              };
+            }
+          }}
+          onDragLeave={(e: DragEvent) => {
+            // Only reset if leaving the all day holder completely
+            const relatedTarget = e.relatedTarget as HTMLElement;
+            const allDayHolder = e.currentTarget as HTMLElement;
+            if (!allDayHolder.contains(relatedTarget)) {
+              this.dragDropState = {
+                ...this.dragDropState,
+                isDraggedOverAllDay: false,
+              };
+            }
+          }}
+          onDrop={(e: DragEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.dispatchDropEvent(e.clientY);
+          }}
+        />
         {this.showCurrentDate && (
           <span
             class="mhCalendarDay_dayDate"
@@ -445,96 +354,32 @@ export class MHCalendarDay {
             {dayOfMonth}
           </span>
         )}
-
-        {this.isToday && isTimeView && (
-          <div
-            class="mhCalendarDay__currentTime"
-            style={{
-              ...this.currentTimePosition,
-              ...newMhCalendarStore.getInlineStyleForClass(
-                'mhCalendarDay__currentTime'
-              ),
-            }}
+        <mh-calendar-day-time-view-overlays
+          day={this.day!}
+          calendarDayElementHeight={this.calendarDayElementHeight!}
+          isToday={this.isToday}
+          currentTimePosition={this.currentTimePosition}
+          isTimeView={isTimeView}
+        />
+        <mh-calendar-day-dragged-event-preview
+          dragDropState={this.dragDropState}
+          day={this.day}
+          calendarDayElementHeight={this.calendarDayElementHeight}
+          viewType={newMhCalendarStore.state.viewType}
+        />
+        {!isTimeView ? (
+          <mh-calendar-day-month-view-events
+            groupedEvents={this.groupedEvents}
+            maxVisibleEventsInMonthView={this.maxVisibleEventsInMonthView}
+            calendarDayElementHeight={this.calendarDayElementHeight}
+            day={this.day}
           />
-        )}
-
-        {this.isDraggedOver && newMhCalendarStore.state.draggedEvent && (
-          <div
-            class="mhCalendarDay__eventHolder"
-            style={{
-              ...this.getStylesForDraggedEvent(),
-              ...newMhCalendarStore.getInlineStyleForClass(
-                'mhCalendarDay__eventHolder'
-              ),
-            }}
-          >
-            <mh-calendar-event
-              event={newMhCalendarStore.state.draggedEvent}
-              dayHeight={this.calendarDayElementHeight}
-              eventTopPosition={this.isDraggedOver}
-              dayOfRendering={this.day}
-              isDragged={true}
-            />
-          </div>
-        )}
-
-        {Array.from(this.groupedEvents.entries()).map(([_, events]) =>
-          events
-            .sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
-            .slice(0, 5)
-            .map((event, index) => {
-              if (!this.calendarDayElementHeight || !this.day) return;
-
-              const instanceId = `${event.id}-${index}`;
-              const eventTopPosition =
-                EventStyleManager.calculateEventTopPosition(
-                  event.startDate,
-                  event.allDay ?? false,
-                  this.calendarDayElementHeight,
-                  this.day
-                );
-              const positionStyle = EventStyleManager.calculateEventWidth(
-                events,
-                index
-              );
-
-              return (
-                <div
-                  key={instanceId}
-                  data-instance={instanceId}
-                  class="mhCalendarDay__eventHolder"
-                  style={{
-                    ...this.getEventHolderStyle(
-                      eventTopPosition,
-                      positionStyle
-                    ),
-                    ...newMhCalendarStore.getInlineStyleForClass(
-                      'mhCalendarDay__eventHolder'
-                    ),
-                  }}
-                >
-                  {index < 4 ? (
-                    <mh-calendar-event
-                      event={event}
-                      dayHeight={this.calendarDayElementHeight}
-                      eventTopPosition={eventTopPosition}
-                      dayOfRendering={this.day}
-                    />
-                  ) : (
-                    <div
-                      class="mhCalendarDay__eventsLeftIndicator"
-                      style={{
-                        ...newMhCalendarStore.getInlineStyleForClass(
-                          'mhCalendarDay__eventsLeftIndicator'
-                        ),
-                      }}
-                    >
-                      {`${events.length - index} events left`}
-                    </div>
-                  )}
-                </div>
-              );
-            })
+        ) : (
+          <mh-calendar-day-time-view-events
+            groupedEvents={this.groupedEvents}
+            calendarDayElementHeight={this.calendarDayElementHeight}
+            day={this.day}
+          />
         )}
       </div>
     );

@@ -1,9 +1,16 @@
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import {
   MINUTES_IN_HOUR,
   WEEKEND_DAYS,
 } from '../components/mh-calendar-day/mh-calendar-day.const';
 import newMhCalendarStore from '../store/store/mh-calendar-store';
+import { TimezoneUtils } from './TimezoneUtils';
+
+// Load dayjs timezone plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export class DateUtils {
   static convertDateToString = (
@@ -68,6 +75,28 @@ export class DateUtils {
         MINUTES_IN_HOUR
     );
 
+    // Get main timezone if configured
+    const timezones = newMhCalendarStore.state.timezones || [];
+    const mainTimezone = TimezoneUtils.getMainTimezone(timezones);
+    const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    // If main timezone is configured and different from browser, create date in main timezone
+    if (mainTimezone && mainTimezone !== browserTimezone) {
+      // Parse the day date as a string to avoid timezone conversion issues
+      const dayString = dayjs(dayToSet).format('YYYY-MM-DD');
+
+      // Create date in main timezone with the clicked hour/minute
+      const dateInMainTz = dayjs.tz(
+        `${dayString} ${String(clickedHour).padStart(2, '0')}:${String(clickedMinutes).padStart(2, '0')}:00`,
+        mainTimezone
+      );
+
+      // Convert to JavaScript Date (which uses browser's local timezone)
+      // This Date object represents the correct moment in time
+      return dateInMainTz.toDate();
+    }
+
+    // Default: use browser timezone (current behavior)
     const newDate = new Date(dayToSet);
     newDate.setHours(clickedHour);
     newDate.setMinutes(clickedMinutes);

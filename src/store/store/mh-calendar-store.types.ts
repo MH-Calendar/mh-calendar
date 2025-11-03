@@ -14,6 +14,9 @@ export enum MHCalendarReducerStoreActions {
   PREV_DATE_RANGE = 'PREV_DATE_RANGE',
   SET_TO_TODAY = 'SET_TO_TODAY',
   EVENT_DROP = 'EVENT_DROP',
+  EVENT_RESIZE = 'EVENT_RESIZE',
+  OPEN_MODAL = 'OPEN_MODAL',
+  CLOSE_MODAL = 'CLOSE_MODAL',
 }
 
 export interface IMHCalendarAction<T = any> {
@@ -29,6 +32,7 @@ export interface IMHCalendarEvent {
   allDay?: boolean;
   description?: string;
   isHidden?: boolean;
+  color?: string; // Individual event color (e.g., '#3b82f6', 'rgb(59, 130, 246)', etc.)
 
   draggingToggle?: boolean;
 
@@ -41,6 +45,19 @@ export enum IMHCalendarViewType {
   MONTH = 'MONTH',
   WEEK = 'WEEK',
   MULTI_DAY = 'MULTI_DAY',
+  AGENDA = 'AGENDA',
+}
+
+export interface IModalState {
+  isOpen: boolean;
+  content?: any;
+  position?: {
+    x?: number;
+    y?: number;
+    element?: HTMLElement;
+    alignment?: 'top' | 'bottom' | 'left' | 'right' | 'center';
+    rect?: { top: number; left: number; width: number; height: number };
+  };
 }
 
 export interface IMHCalendarState extends IMHCalendarFullOptions {
@@ -53,6 +70,9 @@ export interface IMHCalendarState extends IMHCalendarFullOptions {
   // Values of css variables. Set also here for components
   // where style is set directly in tsx files
   properties: Record<string, string>;
+
+  // Modal state
+  modal?: IModalState;
 }
 
 export interface IMHCalendarStore {

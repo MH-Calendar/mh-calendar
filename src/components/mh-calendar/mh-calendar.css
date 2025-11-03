@@ -1,11 +1,11 @@
 @import url('../../global/global.css');
 :host {
   --test-color: #8ee47c;
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 
 .mhCalendar {
-  overflow: hidden;
+  /* overflow: hidden; */
   background-color: #fafafa;
   border-radius: 10px;
   padding: 15px;

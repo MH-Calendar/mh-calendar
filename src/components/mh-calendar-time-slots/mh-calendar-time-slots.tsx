@@ -1,7 +1,14 @@
 import { Component, Element, h, State, Watch } from '@stencil/core';
 import newMhCalendarStore from '../../store/store/mh-calendar-store';
 import { DaysGenerator } from '../../utils/DaysGenerator';
+import { TimezoneUtils } from '../../utils/TimezoneUtils';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+// Load dayjs timezone plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
 @Component({
   tag: 'mh-calendar-time-slots',
   styleUrl: 'mh-calendar-time-slots.css',
@@ -105,21 +112,91 @@ export class MHCalendarTimeSlots {
       return timeInHours % hourInterval === 0 ? timeInHours : '';
     };
 
+    // Get timezones
+    const timezones = newMhCalendarStore.state.timezones || [];
+    const mainTimezone = TimezoneUtils.getMainTimezone(timezones);
+    const additionalTimezones = timezones.slice(1); // Skip first (main) timezone
+
     // Render slots
     return Array.from({ length: this.amountOfPrintedSlots ?? 0 }).map(
       (_, index) => {
         const slotTime = calculateSlotTime(index);
         const displayTime = shouldShowTime(slotTime);
-        const formattedTime = !displayTime
-          ? ''
-          : dayjs()
-              .hour(displayTime)
-              .minute(0)
-              .format(newMhCalendarStore.state.hoursDisplayFormat);
+
+        if (!displayTime) {
+          return (
+            <div class="mhCalendarWeek__border">
+              <span></span>
+            </div>
+          );
+        }
+
+        // Format main timezone time
+        // Use main timezone if specified, otherwise use browser default
+        const referenceDate = this.currentTimeFrom || new Date();
+        const dateString = dayjs(referenceDate).format('YYYY-MM-DD');
+
+        const formattedMainTime =
+          mainTimezone &&
+          mainTimezone !== Intl.DateTimeFormat().resolvedOptions().timeZone
+            ? dayjs
+                .tz(
+                  `${dateString} ${String(Math.floor(displayTime)).padStart(2, '0')}:${String(Math.round((displayTime % 1) * 60)).padStart(2, '0')}:00`,
+                  mainTimezone
+                )
+                .format(newMhCalendarStore.state.hoursDisplayFormat)
+            : dayjs()
+                .hour(displayTime)
+                .minute(0)
+                .format(newMhCalendarStore.state.hoursDisplayFormat);
+
+        // Format additional timezones
+        const additionalTimes = additionalTimezones.map((tz, tzIndex) => {
+          const formattedTime = TimezoneUtils.formatTimeInTimezone(
+            Math.floor(displayTime),
+            Math.round((displayTime % 1) * 60),
+            mainTimezone,
+            tz,
+            newMhCalendarStore.state.hoursDisplayFormat,
+            referenceDate
+          );
+          const abbreviation = TimezoneUtils.getTimezoneAbbreviation(tz);
+
+          return {
+            formattedTime,
+            abbreviation,
+            timezone: tz,
+            key: `tz-${tzIndex}`,
+          };
+        });
 
         return (
           <div class="mhCalendarWeek__border">
-            <span>{formattedTime}</span>
+            <div class="mhCalendarWeek__border__timeContainer">
+              <span class="mhCalendarWeek__border__mainTime">
+                {formattedMainTime}
+              </span>
+              {additionalTimes.length > 0 && (
+                <div class="mhCalendarWeek__border__additionalTimezones">
+                  {additionalTimes.map(
+                    ({ formattedTime, abbreviation, timezone, key }) => (
+                      <span
+                        key={key}
+                        class="mhCalendarWeek__border__additionalTime"
+                        title={timezone}
+                      >
+                        {formattedTime}
+                        {abbreviation && (
+                          <span class="mhCalendarWeek__border__tzAbbr">
+                            {abbreviation}
+                          </span>
+                        )}
+                      </span>
+                    )
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         );
       }
@@ -173,14 +250,33 @@ export class MHCalendarTimeSlots {
               <span
                 class="gtm-info"
                 style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  width: '100%',
+                  height: '100%',
                   ...newMhCalendarStore.getInlineStyleForClass('gtm-info'),
                 }}
               >
-                GMT
-                {(() => {
-                  const offset = -new Date().getTimezoneOffset() / 60;
-                  return offset >= 0 ? `+${offset}` : offset;
-                })()}
+                {newMhCalendarStore.state.timezoneLabel !== undefined
+                  ? newMhCalendarStore.state.timezoneLabel
+                  : (() => {
+                      const timezones =
+                        newMhCalendarStore.state.timezones || [];
+                      const mainTimezone =
+                        TimezoneUtils.getMainTimezone(timezones);
+                      const offset =
+                        TimezoneUtils.getTimezoneOffset(mainTimezone);
+                      const abbr =
+                        TimezoneUtils.getTimezoneAbbreviation(mainTimezone);
+
+                      if (abbr) {
+                        return `${abbr} (GMT${offset >= 0 ? '+' : ''}${offset})`;
+                      }
+
+                      return `GMT${offset >= 0 ? '+' : ''}${offset}`;
+                    })()}
               </span>
             </div>
           )}

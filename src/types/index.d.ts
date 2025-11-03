@@ -22,6 +22,15 @@ export type IMHCalendarConfigBaseStyle = {
     headerTodayBackgroundColor?: string;
     currentTimeColor?: string;
 
+    // Event resize handle color
+    eventResizeHandleColor?: string;
+    eventTimeLabelBg?: string;
+    eventTimeLabelColor?: string;
+    eventTimeDiffColor?: string;
+
+    // Business hours overlay color
+    nonBusinessHoursOverlayColor?: string;
+
     // TLDR: 'View' is what is underneath the navigation. TODO: explain this in documentation
     viewHeaderHeight?: string;
     viewHeight?: string;
@@ -110,6 +119,20 @@ export interface IMHCalendarConfigBaseUserActions {
    * Callback function to be called when a day is right clicked.
    */
   onRightDayClick: (day: any) => void;
+
+  /**
+   * Callback function to be called when a new event is created via click.
+   * The callback receives the newly created event object.
+   * You should add this event to your events array to display it in the calendar.
+   */
+  onEventCreated?: (event: MHCalendarEvents) => void;
+
+  /**
+   * Callback function to be called when an event is updated (e.g., title, description, dates).
+   * The callback receives the updated event object.
+   * You should update the event in your events array.
+   */
+  onEventUpdated?: (event: MHCalendarEvents) => void;
 }
 
 export interface IMHCalendarCustomRenderConfig {
@@ -204,6 +227,36 @@ export type SlotOption = {
   minutes: number;
 };
 
+export type BusinessHoursConfig = {
+  /**
+   * Days of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday).
+   * Can be an array to apply the same hours to multiple days.
+   * If not provided, applies to all days that don't have a specific match.
+   *
+   * @example [1, 2, 3, 4, 5] // Monday to Friday
+   * @example [0, 6] // Weekend
+   */
+  dayOfWeek?: number | number[];
+
+  /**
+   * Specific date for this business hours configuration.
+   * Takes precedence over dayOfWeek.
+   */
+  date?: Date | string;
+
+  /**
+   * Business hours start time (0-23).
+   * @example 9 for 9:00 AM
+   */
+  start: number;
+
+  /**
+   * Business hours end time (0-24).
+   * @example 17 for 5:00 PM
+   */
+  end: number;
+};
+
 export interface IMHCalendarConfigBaseMultiViewOptions
   extends IMHCalendarConfigBase {
   /**
@@ -219,6 +272,20 @@ export interface IMHCalendarConfigBaseMultiViewOptions
   slotInterval?: SlotOption;
 
   hoursSlotInterval?: SlotOption;
+
+  /**
+   * Business hours configuration array.
+   * Allows different business hours for different days.
+   * Hours outside business hours will be grayed out.
+   *
+   * @example
+   * [
+   *   { dayOfWeek: [1, 2, 3, 4, 5], start: 9, end: 17 }, // Monday to Friday
+   *   { dayOfWeek: [0, 6], start: 10, end: 14 }, // Weekend
+   *   { date: new Date('2024-12-25'), start: 0, end: 0 }, // Christmas - closed
+   * ]
+   */
+  businessHours?: BusinessHoursConfig[];
 }
 
 export interface IMHCalendarWeekConfig
@@ -259,6 +326,66 @@ export interface IMHCalendarWeekConfig
    * @description NOT IMPLEMENTED
    */
   showWeekends?: boolean;
+
+  /**
+   * Minimum duration of an event in minutes.
+   * @default 15
+   */
+  minEventDuration?: number;
+
+  /**
+   * Allow user to resize event.
+   * @default true
+   */
+  allowEventResize?: boolean;
+
+  /**
+   * Array of day numbers (0-6) to hide in multi-view (WEEK/DAY views).
+   * 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+   * @example [0, 6] to hide weekends (Sunday and Saturday)
+   * @example [6, 7] to hide Saturday and Sunday (alternative notation)
+   */
+  hiddenDays?: number[];
+
+  /**
+   * If true, prevents dragging events into non-business hours areas.
+   * Events can only be dropped within business hours defined in businessHours config.
+   * @default false
+   */
+  blockBusinessHours?: boolean;
+
+  /**
+   * If true, creates a new event when user clicks on a day/hour in the calendar.
+   * In WEEK/DAY view: creates event from clicked hour to next hour (e.g., click at 15:30 creates event 15:00-16:00).
+   * In MONTH view: creates all-day event.
+   * @default false
+   */
+  createEventOnClick?: boolean;
+
+  /**
+   * Array of timezone identifiers (IANA timezone names, e.g., 'Europe/Warsaw', 'America/Sao_Paulo').
+   * Maximum 3 timezones. First one (index 0) is the main timezone used for calendar operations and events.
+   * Additional timezones (max 2) are displayed alongside for reference only.
+   * @example ['Europe/Warsaw', 'America/Sao_Paulo'] // Main: Warsaw, Reference: Sao Paulo
+   * @example ['America/New_York', 'Europe/London', 'Asia/Tokyo'] // Main: New York, References: London & Tokyo
+   */
+  timezones?: string[];
+
+  /**
+   * Custom text to display in the timezone label area (above time slots, left of dates).
+   * If not provided, displays automatically generated timezone info (e.g., "CET (GMT+1)").
+   * @example "My Timezone" // Custom label
+   * @example undefined // Auto-generated timezone info
+   */
+  timezoneLabel?: string;
+
+  /**
+   * Display mode for overlapping events.
+   * - EventDisplayMode.SideBySide: Events are displayed next to each other (default)
+   * - EventDisplayMode.Overlapping: Events are displayed on top of each other (like Google Calendar)
+   * @default EventDisplayMode.SideBySide
+   */
+  eventDisplayMode?: EventDisplayMode | 'side-by-side' | 'overlapping';
 }
 
 export interface IMHCalendarFullOptions extends IMHCalendarWeekConfig {}
@@ -268,6 +395,12 @@ export enum IMHCalendarViewType {
   MONTH = 'MONTH',
   WEEK = 'WEEK',
   MULTI_DAY = 'MULTI_DAY',
+  AGENDA = 'AGENDA',
+}
+
+export enum EventDisplayMode {
+  SideBySide = 'side-by-side',
+  Overlapping = 'overlapping',
 }
 
 export type UserApi = IMHCalendarStoreUserApi;
