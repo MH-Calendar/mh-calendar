@@ -43,6 +43,8 @@ export const DEFAULT_WEEK_VIEW_CONFIG: IMHCalendarWeekConfig = {
   customWeekView: false,
   showAllDayTasks: true,
   allDayEventsHeight: 100,
+  allowEventResize: true,
+  minEventDuration: 15,
   makeAllDaysSticky: false,
   slotInterval: {
     hours: 1,
@@ -53,4 +55,7 @@ export const DEFAULT_WEEK_VIEW_CONFIG: IMHCalendarWeekConfig = {
     minutes: 0,
   },
   hoursDisplayFormat: 'h A',
+  businessHours: [
+    { start: 9, end: 17 }, // Default for all days
+  ],
 };

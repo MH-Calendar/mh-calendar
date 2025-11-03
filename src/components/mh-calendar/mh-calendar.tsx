@@ -1,5 +1,5 @@
 import { Component, Method, Prop, State, h } from '@stencil/core';
-import { IMHCalendarFullOptions } from '../../types';
+import { IMHCalendarFullOptions, UserApi } from '../../types';
 import {
   base64Svg,
   DEFAULT_WEEK_VIEW_CONFIG,
@@ -25,7 +25,7 @@ export class MHCalendar {
   @State() svgContent: string = '';
 
   @Method()
-  async getApi() {
+  async getApi(): Promise<UserApi> {
     const userAPI = createUserAPI(newMhCalendarStore);
     return userAPI;
   }
@@ -55,6 +55,8 @@ export class MHCalendar {
         return <mh-calendar-multi-view />;
       case IMHCalendarViewType.MONTH:
         return <mh-calendar-month />;
+      case IMHCalendarViewType.AGENDA:
+        return <mh-calendar-agenda-view />;
       default:
         return <mh-calendar-multi-view />;
     }
@@ -62,7 +64,6 @@ export class MHCalendar {
 
   render() {
     if (!newMhCalendarStore.state.reactiveEvents) return;
-
     return (
       <div
         class="mhCalendar"
@@ -80,6 +81,7 @@ export class MHCalendar {
         <div class="mhCalendar__calendarViewHolder">
           {this.getCorrectViewType()}
         </div>
+        <mh-calendar-modal />
         {/* <div innerHTML={this.svgContent} /> */}
       </div>
     );

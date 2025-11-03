@@ -5,11 +5,13 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { IMHCalendarFullOptions, MHCalendarEvents } from "./types";
+import { IMHCalendarFullOptions, MHCalendarEvents, UserApi } from "./types";
 import { IMHCalendarEvent, IMHCalendarViewType } from "./store/store/mh-calendar-store.types";
+import { DragDropState } from "./utils/DragDropHandler";
 import { IMHCalendarEvent as IMHCalendarEvent1 } from "./components";
-export { IMHCalendarFullOptions, MHCalendarEvents } from "./types";
+export { IMHCalendarFullOptions, MHCalendarEvents, UserApi } from "./types";
 export { IMHCalendarEvent, IMHCalendarViewType } from "./store/store/mh-calendar-store.types";
+export { DragDropState } from "./utils/DragDropHandler";
 export { IMHCalendarEvent as IMHCalendarEvent1 } from "./components";
 export namespace Components {
     interface MhCalendar {
@@ -21,8 +23,10 @@ export namespace Components {
           * @default []
          */
         "events": IMHCalendarEvent[];
-        "getApi": () => Promise<import("/Users/mateusz/MH-Calendar/Dev/mh-calendar-core/src/store/store/mh-calendar-store.user-api").IMHCalendarStoreUserApi>;
+        "getApi": () => Promise<UserApi>;
         "reactComponent": any;
+    }
+    interface MhCalendarAgendaView {
     }
     interface MhCalendarDay {
         "day"?: Date;
@@ -30,6 +34,38 @@ export namespace Components {
           * @default SHOW_DATE_ON_DAY
          */
         "showCurrentDate": boolean;
+    }
+    interface MhCalendarDayAllDayEventsHolder {
+        "allDayEvents": MHCalendarEvents[];
+        "dragDropState": DragDropState;
+        "onDragLeave": (e: DragEvent) => void;
+        "onDragOver": (e: DragEvent) => void;
+        "onDrop": (e: DragEvent) => void;
+        "showCurrentDate": boolean;
+    }
+    interface MhCalendarDayDraggedEventPreview {
+        "calendarDayElementHeight"?: number;
+        "day"?: Date;
+        "dragDropState": DragDropState;
+        "viewType"?: IMHCalendarViewType;
+    }
+    interface MhCalendarDayMonthViewEvents {
+        "calendarDayElementHeight"?: number;
+        "day"?: Date;
+        "groupedEvents": Map<string, MHCalendarEvents[]>;
+        "maxVisibleEventsInMonthView": number;
+    }
+    interface MhCalendarDayTimeViewEvents {
+        "calendarDayElementHeight"?: number;
+        "day"?: Date;
+        "groupedEvents": Map<string, MHCalendarEvents[]>;
+    }
+    interface MhCalendarDayTimeViewOverlays {
+        "calendarDayElementHeight": number;
+        "currentTimePosition"?: { top: string };
+        "day": Date;
+        "isTimeView": boolean;
+        "isToday": boolean;
     }
     interface MhCalendarEvent {
         "dayHeight"?: number;
@@ -54,6 +90,8 @@ export namespace Components {
          */
         "showCurrentDate": boolean;
     }
+    interface MhCalendarModal {
+    }
     interface MhCalendarMonth {
     }
     interface MhCalendarMultiView {
@@ -63,6 +101,18 @@ export namespace Components {
           * @default DEFAULT_NAVIGATION_UNIT
          */
         "changeDateRangeByUnit": IMHCalendarViewType;
+    }
+    interface MhCalendarResizeEventHandler {
+        /**
+          * @default null
+         */
+        "eventEndDate": null | Date;
+        "eventHeight": string;
+        "eventId": string;
+        /**
+          * @default null
+         */
+        "eventStartDate": null | Date;
     }
     interface MhCalendarTimeSlots {
     }
@@ -74,11 +124,47 @@ declare global {
         prototype: HTMLMhCalendarElement;
         new (): HTMLMhCalendarElement;
     };
+    interface HTMLMhCalendarAgendaViewElement extends Components.MhCalendarAgendaView, HTMLStencilElement {
+    }
+    var HTMLMhCalendarAgendaViewElement: {
+        prototype: HTMLMhCalendarAgendaViewElement;
+        new (): HTMLMhCalendarAgendaViewElement;
+    };
     interface HTMLMhCalendarDayElement extends Components.MhCalendarDay, HTMLStencilElement {
     }
     var HTMLMhCalendarDayElement: {
         prototype: HTMLMhCalendarDayElement;
         new (): HTMLMhCalendarDayElement;
+    };
+    interface HTMLMhCalendarDayAllDayEventsHolderElement extends Components.MhCalendarDayAllDayEventsHolder, HTMLStencilElement {
+    }
+    var HTMLMhCalendarDayAllDayEventsHolderElement: {
+        prototype: HTMLMhCalendarDayAllDayEventsHolderElement;
+        new (): HTMLMhCalendarDayAllDayEventsHolderElement;
+    };
+    interface HTMLMhCalendarDayDraggedEventPreviewElement extends Components.MhCalendarDayDraggedEventPreview, HTMLStencilElement {
+    }
+    var HTMLMhCalendarDayDraggedEventPreviewElement: {
+        prototype: HTMLMhCalendarDayDraggedEventPreviewElement;
+        new (): HTMLMhCalendarDayDraggedEventPreviewElement;
+    };
+    interface HTMLMhCalendarDayMonthViewEventsElement extends Components.MhCalendarDayMonthViewEvents, HTMLStencilElement {
+    }
+    var HTMLMhCalendarDayMonthViewEventsElement: {
+        prototype: HTMLMhCalendarDayMonthViewEventsElement;
+        new (): HTMLMhCalendarDayMonthViewEventsElement;
+    };
+    interface HTMLMhCalendarDayTimeViewEventsElement extends Components.MhCalendarDayTimeViewEvents, HTMLStencilElement {
+    }
+    var HTMLMhCalendarDayTimeViewEventsElement: {
+        prototype: HTMLMhCalendarDayTimeViewEventsElement;
+        new (): HTMLMhCalendarDayTimeViewEventsElement;
+    };
+    interface HTMLMhCalendarDayTimeViewOverlaysElement extends Components.MhCalendarDayTimeViewOverlays, HTMLStencilElement {
+    }
+    var HTMLMhCalendarDayTimeViewOverlaysElement: {
+        prototype: HTMLMhCalendarDayTimeViewOverlaysElement;
+        new (): HTMLMhCalendarDayTimeViewOverlaysElement;
     };
     interface HTMLMhCalendarEventElement extends Components.MhCalendarEvent, HTMLStencilElement {
     }
@@ -104,6 +190,12 @@ declare global {
         prototype: HTMLMhCalendarHeaderElement;
         new (): HTMLMhCalendarHeaderElement;
     };
+    interface HTMLMhCalendarModalElement extends Components.MhCalendarModal, HTMLStencilElement {
+    }
+    var HTMLMhCalendarModalElement: {
+        prototype: HTMLMhCalendarModalElement;
+        new (): HTMLMhCalendarModalElement;
+    };
     interface HTMLMhCalendarMonthElement extends Components.MhCalendarMonth, HTMLStencilElement {
     }
     var HTMLMhCalendarMonthElement: {
@@ -122,6 +214,12 @@ declare global {
         prototype: HTMLMhCalendarNavigationElement;
         new (): HTMLMhCalendarNavigationElement;
     };
+    interface HTMLMhCalendarResizeEventHandlerElement extends Components.MhCalendarResizeEventHandler, HTMLStencilElement {
+    }
+    var HTMLMhCalendarResizeEventHandlerElement: {
+        prototype: HTMLMhCalendarResizeEventHandlerElement;
+        new (): HTMLMhCalendarResizeEventHandlerElement;
+    };
     interface HTMLMhCalendarTimeSlotsElement extends Components.MhCalendarTimeSlots, HTMLStencilElement {
     }
     var HTMLMhCalendarTimeSlotsElement: {
@@ -130,14 +228,22 @@ declare global {
     };
     interface HTMLElementTagNameMap {
         "mh-calendar": HTMLMhCalendarElement;
+        "mh-calendar-agenda-view": HTMLMhCalendarAgendaViewElement;
         "mh-calendar-day": HTMLMhCalendarDayElement;
+        "mh-calendar-day-all-day-events-holder": HTMLMhCalendarDayAllDayEventsHolderElement;
+        "mh-calendar-day-dragged-event-preview": HTMLMhCalendarDayDraggedEventPreviewElement;
+        "mh-calendar-day-month-view-events": HTMLMhCalendarDayMonthViewEventsElement;
+        "mh-calendar-day-time-view-events": HTMLMhCalendarDayTimeViewEventsElement;
+        "mh-calendar-day-time-view-overlays": HTMLMhCalendarDayTimeViewOverlaysElement;
         "mh-calendar-event": HTMLMhCalendarEventElement;
         "mh-calendar-event-full": HTMLMhCalendarEventFullElement;
         "mh-calendar-event-small": HTMLMhCalendarEventSmallElement;
         "mh-calendar-header": HTMLMhCalendarHeaderElement;
+        "mh-calendar-modal": HTMLMhCalendarModalElement;
         "mh-calendar-month": HTMLMhCalendarMonthElement;
         "mh-calendar-multi-view": HTMLMhCalendarMultiViewElement;
         "mh-calendar-navigation": HTMLMhCalendarNavigationElement;
+        "mh-calendar-resize-event-handler": HTMLMhCalendarResizeEventHandlerElement;
         "mh-calendar-time-slots": HTMLMhCalendarTimeSlotsElement;
     }
 }
@@ -153,12 +259,46 @@ declare namespace LocalJSX {
         "events"?: IMHCalendarEvent[];
         "reactComponent"?: any;
     }
+    interface MhCalendarAgendaView {
+    }
     interface MhCalendarDay {
         "day"?: Date;
         /**
           * @default SHOW_DATE_ON_DAY
          */
         "showCurrentDate"?: boolean;
+    }
+    interface MhCalendarDayAllDayEventsHolder {
+        "allDayEvents": MHCalendarEvents[];
+        "dragDropState": DragDropState;
+        "onDragLeave": (e: DragEvent) => void;
+        "onDragOver": (e: DragEvent) => void;
+        "onDrop": (e: DragEvent) => void;
+        "showCurrentDate": boolean;
+    }
+    interface MhCalendarDayDraggedEventPreview {
+        "calendarDayElementHeight"?: number;
+        "day"?: Date;
+        "dragDropState": DragDropState;
+        "viewType"?: IMHCalendarViewType;
+    }
+    interface MhCalendarDayMonthViewEvents {
+        "calendarDayElementHeight"?: number;
+        "day"?: Date;
+        "groupedEvents": Map<string, MHCalendarEvents[]>;
+        "maxVisibleEventsInMonthView": number;
+    }
+    interface MhCalendarDayTimeViewEvents {
+        "calendarDayElementHeight"?: number;
+        "day"?: Date;
+        "groupedEvents": Map<string, MHCalendarEvents[]>;
+    }
+    interface MhCalendarDayTimeViewOverlays {
+        "calendarDayElementHeight": number;
+        "currentTimePosition"?: { top: string };
+        "day": Date;
+        "isTimeView": boolean;
+        "isToday": boolean;
     }
     interface MhCalendarEvent {
         "dayHeight"?: number;
@@ -183,6 +323,8 @@ declare namespace LocalJSX {
          */
         "showCurrentDate"?: boolean;
     }
+    interface MhCalendarModal {
+    }
     interface MhCalendarMonth {
     }
     interface MhCalendarMultiView {
@@ -193,18 +335,38 @@ declare namespace LocalJSX {
          */
         "changeDateRangeByUnit"?: IMHCalendarViewType;
     }
+    interface MhCalendarResizeEventHandler {
+        /**
+          * @default null
+         */
+        "eventEndDate"?: null | Date;
+        "eventHeight": string;
+        "eventId": string;
+        /**
+          * @default null
+         */
+        "eventStartDate"?: null | Date;
+    }
     interface MhCalendarTimeSlots {
     }
     interface IntrinsicElements {
         "mh-calendar": MhCalendar;
+        "mh-calendar-agenda-view": MhCalendarAgendaView;
         "mh-calendar-day": MhCalendarDay;
+        "mh-calendar-day-all-day-events-holder": MhCalendarDayAllDayEventsHolder;
+        "mh-calendar-day-dragged-event-preview": MhCalendarDayDraggedEventPreview;
+        "mh-calendar-day-month-view-events": MhCalendarDayMonthViewEvents;
+        "mh-calendar-day-time-view-events": MhCalendarDayTimeViewEvents;
+        "mh-calendar-day-time-view-overlays": MhCalendarDayTimeViewOverlays;
         "mh-calendar-event": MhCalendarEvent;
         "mh-calendar-event-full": MhCalendarEventFull;
         "mh-calendar-event-small": MhCalendarEventSmall;
         "mh-calendar-header": MhCalendarHeader;
+        "mh-calendar-modal": MhCalendarModal;
         "mh-calendar-month": MhCalendarMonth;
         "mh-calendar-multi-view": MhCalendarMultiView;
         "mh-calendar-navigation": MhCalendarNavigation;
+        "mh-calendar-resize-event-handler": MhCalendarResizeEventHandler;
         "mh-calendar-time-slots": MhCalendarTimeSlots;
     }
 }
@@ -213,14 +375,22 @@ declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
             "mh-calendar": LocalJSX.MhCalendar & JSXBase.HTMLAttributes<HTMLMhCalendarElement>;
+            "mh-calendar-agenda-view": LocalJSX.MhCalendarAgendaView & JSXBase.HTMLAttributes<HTMLMhCalendarAgendaViewElement>;
             "mh-calendar-day": LocalJSX.MhCalendarDay & JSXBase.HTMLAttributes<HTMLMhCalendarDayElement>;
+            "mh-calendar-day-all-day-events-holder": LocalJSX.MhCalendarDayAllDayEventsHolder & JSXBase.HTMLAttributes<HTMLMhCalendarDayAllDayEventsHolderElement>;
+            "mh-calendar-day-dragged-event-preview": LocalJSX.MhCalendarDayDraggedEventPreview & JSXBase.HTMLAttributes<HTMLMhCalendarDayDraggedEventPreviewElement>;
+            "mh-calendar-day-month-view-events": LocalJSX.MhCalendarDayMonthViewEvents & JSXBase.HTMLAttributes<HTMLMhCalendarDayMonthViewEventsElement>;
+            "mh-calendar-day-time-view-events": LocalJSX.MhCalendarDayTimeViewEvents & JSXBase.HTMLAttributes<HTMLMhCalendarDayTimeViewEventsElement>;
+            "mh-calendar-day-time-view-overlays": LocalJSX.MhCalendarDayTimeViewOverlays & JSXBase.HTMLAttributes<HTMLMhCalendarDayTimeViewOverlaysElement>;
             "mh-calendar-event": LocalJSX.MhCalendarEvent & JSXBase.HTMLAttributes<HTMLMhCalendarEventElement>;
             "mh-calendar-event-full": LocalJSX.MhCalendarEventFull & JSXBase.HTMLAttributes<HTMLMhCalendarEventFullElement>;
             "mh-calendar-event-small": LocalJSX.MhCalendarEventSmall & JSXBase.HTMLAttributes<HTMLMhCalendarEventSmallElement>;
             "mh-calendar-header": LocalJSX.MhCalendarHeader & JSXBase.HTMLAttributes<HTMLMhCalendarHeaderElement>;
+            "mh-calendar-modal": LocalJSX.MhCalendarModal & JSXBase.HTMLAttributes<HTMLMhCalendarModalElement>;
             "mh-calendar-month": LocalJSX.MhCalendarMonth & JSXBase.HTMLAttributes<HTMLMhCalendarMonthElement>;
             "mh-calendar-multi-view": LocalJSX.MhCalendarMultiView & JSXBase.HTMLAttributes<HTMLMhCalendarMultiViewElement>;
             "mh-calendar-navigation": LocalJSX.MhCalendarNavigation & JSXBase.HTMLAttributes<HTMLMhCalendarNavigationElement>;
+            "mh-calendar-resize-event-handler": LocalJSX.MhCalendarResizeEventHandler & JSXBase.HTMLAttributes<HTMLMhCalendarResizeEventHandlerElement>;
             "mh-calendar-time-slots": LocalJSX.MhCalendarTimeSlots & JSXBase.HTMLAttributes<HTMLMhCalendarTimeSlotsElement>;
         }
     }

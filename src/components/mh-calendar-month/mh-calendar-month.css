@@ -4,8 +4,19 @@
   grid-template-rows: repeat(6, minmax(0, 1fr));
   gap: 0;
   width: 100%;
+  /* Ensure grid rows stretch to fill full height */
+  align-items: stretch;
+  overflow: hidden;
 }
 
 .mhCalendarMonth {
-  height: 100%
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.mhCalendarMonth > div {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
 }

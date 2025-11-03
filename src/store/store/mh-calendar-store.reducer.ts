@@ -34,6 +34,12 @@ export class MHCalendarReducer
         return this.setDateToToday(newState);
       case MHCalendarReducerStoreActions.EVENT_DROP:
         return this.handleEventDrop(newState, payload);
+      case MHCalendarReducerStoreActions.EVENT_RESIZE:
+        return this.handleEventResize(newState, payload);
+      case MHCalendarReducerStoreActions.OPEN_MODAL:
+        return this.openModal(newState, payload);
+      case MHCalendarReducerStoreActions.CLOSE_MODAL:
+        return this.closeModal(newState);
       default:
         return state;
     }

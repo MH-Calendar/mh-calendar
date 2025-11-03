@@ -1,5 +1,6 @@
 import { IMHCalendarConfigBaseStyle } from '../../types';
 import { IMHCalendarState } from './mh-calendar-store.types';
+import { EventDisplayMode } from '../../types/enums';
 
 export const DEFAULT_HOUR_HEIGHT = 50;
 export const DEFAULT_ALL_EVENTS_HEADER_WIDTH = 100;
@@ -48,4 +49,28 @@ export const initialState: IMHCalendarState = {
   onRightEventClick: undefined,
   onEventClick: undefined,
   onDayClick: undefined,
+  onRightDayClick: undefined,
+  onEventCreated: undefined,
+  onEventUpdated: undefined,
+
+  // Resize events
+  allowEventResize: false,
+  minEventDuration: 15,
+
+  // Event creation
+  createEventOnClick: false,
+
+  // Timezones
+  timezones: undefined,
+  timezoneLabel: undefined,
+
+  // Event display mode
+  eventDisplayMode: EventDisplayMode.SideBySide,
+
+  // Modal
+  modal: {
+    isOpen: false,
+    content: null,
+    position: undefined,
+  },
 };

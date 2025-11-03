@@ -59,9 +59,10 @@ export class MHCalendarHeader {
           gridTemplateColumns: '40px 1fr',
         };
       case IMHCalendarViewType.WEEK:
+        const daysCount = newMhCalendarStore.daysInRange;
         return {
           display: 'grid',
-          gridTemplateColumns: `${newMhCalendarStore.state.properties.timeSlotWidth ?? '40px'} repeat(7, 1fr)`,
+          gridTemplateColumns: `${newMhCalendarStore.state.properties.timeSlotWidth ?? '40px'} repeat(${daysCount}, 1fr)`,
         };
       case IMHCalendarViewType.MONTH:
       default:
@@ -83,8 +84,16 @@ export class MHCalendarHeader {
 
     switch (newMhCalendarStore.state.viewType) {
       case IMHCalendarViewType.DAY:
-        // For day view, show only the current day
-        days = [this.currentDateRange.fromDate];
+        // For day view, show only the current day (if not hidden)
+        const dayViewDate = this.currentDateRange.fromDate;
+        const dayViewDayOfWeek = dayjs(dayViewDate).day();
+        const hiddenDays = newMhCalendarStore.state.hiddenDays || [];
+        const normalizedHiddenDays = hiddenDays.map((day) =>
+          day === 7 ? 0 : day
+        );
+        if (!normalizedHiddenDays.includes(dayViewDayOfWeek)) {
+          days = [dayViewDate];
+        }
         break;
       case IMHCalendarViewType.MONTH:
         // For month view, show all days in the month grid
@@ -94,7 +103,7 @@ export class MHCalendarHeader {
         break;
       case IMHCalendarViewType.WEEK:
       default:
-        // For week view, show all days in the week
+        // For week view, show all visible days (filtered by hiddenDays)
         days = DaysGenerator.getDatesForMultiView();
         break;
     }

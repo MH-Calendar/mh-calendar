@@ -78,10 +78,12 @@ export class MHCalendarStoreUtils {
         };
 
       case IMHCalendarViewType.WEEK:
+      case IMHCalendarViewType.AGENDA:
+        // Week and Agenda views both use week date range
+        // Agenda view works with both DAY and WEEK context
         const { fromDate: weekFrom, toDate: weekTo } =
           this.getDatesForWeekView(fromDate);
         return { fromDate: weekFrom, toDate: weekTo };
-
       case IMHCalendarViewType.DAY:
       case IMHCalendarViewType.MULTI_DAY:
       default:
@@ -106,6 +108,10 @@ export class MHCalendarStoreUtils {
         break;
       case IMHCalendarViewType.MONTH:
         newFromDate.setMonth(newFromDate.getMonth() + amount);
+        break;
+      case IMHCalendarViewType.AGENDA:
+        // Agenda view shifts by week (works for both DAY and WEEK context)
+        newFromDate.setDate(newFromDate.getDate() + 7 * amount);
         break;
       case IMHCalendarViewType.MULTI_DAY:
         newFromDate.setDate(newFromDate.getDate() + amount);

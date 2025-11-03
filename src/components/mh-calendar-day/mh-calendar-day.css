@@ -16,8 +16,16 @@
   min-height: 0;
   position: relative;
   justify-content: flex-start;
-  align-items: center;
+  align-items: stretch;
   overflow: visible;
+  /* Prevent height changes in month view */
+  align-self: stretch;
+
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .mhCalendarDay > span {
@@ -93,6 +101,11 @@
   top: -4px;
 }
 
+.mhCalendarDay__nonBusinessHours {
+  background-color: var(--nonBusinessHoursOverlayColor);
+  pointer-events: none;
+}
+
 .mhCalendarDay__currentTime {
   position: absolute;
   height: 3px;
@@ -102,4 +115,34 @@
   width: 100%;
   z-index: 2;
   background-color: var(--currentTimeColor);
+}
+
+/* Fix for month view: prevent event holders from causing height changes */
+.mhCalendarDay__eventHolder {
+  min-height: 0;
+  max-height: fit-content;
+}
+
+/* Ensure event holders in month view don't cause layout shifts */
+mh-calendar-month .mhCalendarDay__eventHolder {
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* Container for events in month view - must not exceed available space */
+mh-calendar-month .mhCalendarDay__eventsContainer {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Prevent day cells from growing beyond grid row height */
+mh-calendar-month .mhCalendarDay {
+  overflow: hidden;
+  max-height: 100%;
 }

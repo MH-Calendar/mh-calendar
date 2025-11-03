@@ -1,0 +1,139 @@
+.mhCalendarAgendaView {
+  width: 100%;
+  padding: 20px;
+  font-family: system-ui;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 100%;
+}
+
+.mhCalendarAgendaView--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.mhCalendarAgendaView__emptyMessage {
+  color: #9ca3af;
+  font-size: 14px;
+  text-align: center;
+}
+
+.mhCalendarAgendaView__day {
+  margin-bottom: 32px;
+}
+
+.mhCalendarAgendaView__day:last-child {
+  margin-bottom: 0;
+}
+
+.mhCalendarAgendaView__dayHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--bordersColor, #e5e7eb);
+}
+
+.mhCalendarAgendaView__dayDate {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.mhCalendarAgendaView__dayDateFull {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.mhCalendarAgendaView__events {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mhCalendarAgendaView__event {
+  display: flex;
+  gap: 16px;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  transition: background-color 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.mhCalendarAgendaView__event::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background-color: var(--eventColor, #3b82f6);
+  border-radius: 8px 0 0 8px;
+}
+
+.mhCalendarAgendaView__event:hover {
+  background-color: #f3f4f6;
+}
+
+.mhCalendarAgendaView__eventTime {
+  flex-shrink: 0;
+  width: 140px;
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+  padding-top: 2px;
+}
+
+.mhCalendarAgendaView__eventContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.mhCalendarAgendaView__eventCustom {
+  width: 100%;
+}
+
+.mhCalendarAgendaView__eventTitle {
+  font-size: 15px;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.mhCalendarAgendaView__eventDescription {
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .mhCalendarAgendaView {
+    padding: 16px;
+  }
+
+  .mhCalendarAgendaView__event {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mhCalendarAgendaView__eventTime {
+    width: 100%;
+  }
+
+  .mhCalendarAgendaView__dayDate {
+    font-size: 16px;
+  }
+
+  .mhCalendarAgendaView__dayDateFull {
+    font-size: 13px;
+  }
+}

@@ -11,11 +11,56 @@ import {
 import { stateManager } from '../store';
 import dayjs from 'dayjs';
 import { MHCalendarEvents } from '../../types';
+import { DaysGenerator } from '../../utils/DaysGenerator';
 export class MHCalendarStore implements IMHCalendarStore {
   constructor(
     private reducer: IMHCalendarReducer,
     private stateManager: ObservableMap<IMHCalendarState>
   ) {}
+
+  /**
+   * Opens the global modal with specified content and position
+   * @param content - The content to display in the modal (can be string, JSX, or HTMLElement)
+   * @param position - Optional position configuration (x/y coordinates, relative to element, or rect)
+   * @example
+   * // Center of screen
+   * store.openModal(<div>Hello</div>);
+   *
+   * // At specific coordinates
+   * store.openModal(<div>Hello</div>, { x: 100, y: 200 });
+   *
+   * // Relative to an element
+   * store.openModal(<div>Hello</div>, { element: buttonElement, alignment: 'bottom' });
+   *
+   * // Using rect coordinates
+   * const rect = element.getBoundingClientRect();
+   * store.openModal(<div>Hello</div>, { rect, alignment: 'top' });
+   */
+  public openModal(
+    content: any,
+    position?: {
+      x?: number;
+      y?: number;
+      element?: HTMLElement;
+      alignment?: 'top' | 'bottom' | 'left' | 'right' | 'center';
+      rect?: { top: number; left: number; width: number; height: number };
+    }
+  ): void {
+    this.dispatch({
+      type: MHCalendarReducerStoreActions.OPEN_MODAL,
+      payload: { content, position },
+    });
+  }
+
+  /**
+   * Closes the global modal
+   */
+  public closeModal(): void {
+    this.dispatch({
+      type: MHCalendarReducerStoreActions.CLOSE_MODAL,
+      payload: {},
+    });
+  }
 
   private isReducerSet() {
     if (!this.reducer) throw new Error("Reducer wasn't passed to constructor.");
@@ -64,6 +109,13 @@ export class MHCalendarStore implements IMHCalendarStore {
   // ###### Dynamic getters #######
 
   public get daysInRange() {
+    // For WEEK/DAY views, use filtered days to account for hiddenDays
+    if (this.state.viewType === 'WEEK' || this.state.viewType === 'DAY') {
+      const visibleDays = DaysGenerator.getDatesForMultiView();
+      return visibleDays.length;
+    }
+
+    // For other views, calculate normally
     const start = dayjs(this.state.calendarDateRange.fromDate);
     const end = dayjs(this.state.calendarDateRange.toDate);
 

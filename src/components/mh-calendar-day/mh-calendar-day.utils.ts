@@ -1,9 +1,15 @@
 import dayjs from 'dayjs';
-import { MINUTES_IN_HOUR } from './mh-calendar-day.const';
-import { MHCalendarEvents } from '../../types';
+import {
+  MINUTES_IN_HOUR,
+  NON_BUSINESS_HOURS_OVERLAY_Z_INDEX,
+  FULL_WIDTH_PERCENTAGE,
+  DATE_FORMAT_YYYY_MM_DD,
+} from './mh-calendar-day.const';
+import { MHCalendarEvents, BusinessHoursConfig } from '../../types';
 import newMhCalendarStore from '../../store/store/mh-calendar-store';
 import { EventUtils } from '../../utils/EventUtils';
 import { DateUtils } from '../../utils/DateUtils';
+import { IMHCalendarViewType } from '../../store/store/mh-calendar-store.types';
 
 export class DayUtils {
   static getDayStyles(day: string | Date): string[] {
@@ -57,7 +63,7 @@ export class DayUtils {
     // Separate events into allDay and regular events
     const allDayEvents = events.filter((event) => event.allDay === true);
     const regularEvents = events.filter((event) => event.allDay !== true);
-    
+
     const groups: MHCalendarEvents[][] = [];
 
     // Process only regular events (not all-day events)
@@ -138,5 +144,226 @@ export class DayUtils {
     }
 
     return topPosition + (headerMargin || 1);
+  }
+}
+
+export class BusinessHoursUtils {
+  /**
+   * Finds the business hours configuration for a specific day
+   * Priority: specific date > day of week > default configuration
+   */
+  static getBusinessHoursForDay(
+    day: Date,
+    businessHours: BusinessHoursConfig[] | undefined
+  ): { start: number; end: number } | null {
+    if (
+      !businessHours ||
+      !Array.isArray(businessHours) ||
+      businessHours.length === 0
+    ) {
+      return null;
+    }
+
+    const currentDay = dayjs(day);
+    const currentDayOfWeek = currentDay.day(); // 0 = Sunday, 6 = Saturday
+    const currentDateStr = currentDay.format(DATE_FORMAT_YYYY_MM_DD);
+
+    // First, check for specific date match
+    for (const config of businessHours) {
+      if (config.date) {
+        const configDate = dayjs(config.date);
+        if (configDate.format(DATE_FORMAT_YYYY_MM_DD) === currentDateStr) {
+          return { start: config.start, end: config.end };
+        }
+      }
+    }
+
+    // Then, check for day of week match
+    for (const config of businessHours) {
+      if (config.dayOfWeek !== undefined) {
+        // Handle both array and single number
+        const daysOfWeek = Array.isArray(config.dayOfWeek)
+          ? config.dayOfWeek
+          : [config.dayOfWeek];
+
+        if (daysOfWeek.includes(currentDayOfWeek)) {
+          return { start: config.start, end: config.end };
+        }
+      }
+    }
+
+    // Finally, check for default (no dayOfWeek or date specified)
+    for (const config of businessHours) {
+      if (config.dayOfWeek === undefined && !config.date) {
+        return { start: config.start, end: config.end };
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Calculates styles for non-business hours overlays (gray areas)
+   * Returns array of style objects for each non-business hours range
+   */
+  static getNonBusinessHoursStyles(
+    day: Date,
+    calendarDayElementHeight: number,
+    viewType: IMHCalendarViewType | undefined,
+    businessHours: { start: number; end: number } | null,
+    showTimeFrom: number | undefined,
+    showTimeTo: number | undefined,
+    headerMargin: number
+  ): Array<Record<string, string>> {
+    if (!viewType || !calendarDayElementHeight || !day) {
+      return [];
+    }
+
+    const isTimeView = [
+      IMHCalendarViewType.DAY,
+      IMHCalendarViewType.WEEK,
+    ].includes(viewType);
+
+    if (!isTimeView) return [];
+
+    // If no business hours configured, don't show overlay
+    if (!businessHours || !showTimeFrom || !showTimeTo) {
+      return [];
+    }
+
+    const availableHeight = calendarDayElementHeight - headerMargin;
+    const totalDisplayedMinutes = (showTimeTo - showTimeFrom) * MINUTES_IN_HOUR;
+
+    const calculatePosition = (hour: number): number => {
+      const minutes = (hour - showTimeFrom) * MINUTES_IN_HOUR;
+      const percentage =
+        (minutes / totalDisplayedMinutes) * FULL_WIDTH_PERCENTAGE;
+      return (
+        (availableHeight * percentage) / FULL_WIDTH_PERCENTAGE + headerMargin
+      );
+    };
+
+    const styles: Array<Record<string, string>> = [];
+    const MIN_HEIGHT = 0;
+
+    // Non-business hours before business hours
+    if (showTimeFrom < businessHours.start) {
+      const nonBusinessStart = calculatePosition(showTimeFrom);
+      const nonBusinessEnd = Math.min(
+        calculatePosition(businessHours.start),
+        calendarDayElementHeight
+      );
+      const height = Math.max(
+        MIN_HEIGHT,
+        nonBusinessEnd - Math.max(headerMargin, nonBusinessStart)
+      );
+
+      if (height > MIN_HEIGHT) {
+        styles.push({
+          position: 'absolute',
+          top: `${Math.max(headerMargin, nonBusinessStart)}px`,
+          left: `${MIN_HEIGHT}`,
+          width: `${FULL_WIDTH_PERCENTAGE}%`,
+          height: `${height}px`,
+          zIndex: `${NON_BUSINESS_HOURS_OVERLAY_Z_INDEX}`,
+        });
+      }
+    }
+
+    // Non-business hours after business hours
+    if (showTimeTo > businessHours.end) {
+      const nonBusinessStart = Math.max(
+        headerMargin,
+        calculatePosition(businessHours.end)
+      );
+      const nonBusinessEnd = calculatePosition(showTimeTo);
+      const height = Math.max(
+        MIN_HEIGHT,
+        Math.min(calendarDayElementHeight, nonBusinessEnd) - nonBusinessStart
+      );
+
+      if (height > MIN_HEIGHT) {
+        styles.push({
+          position: 'absolute',
+          top: `${nonBusinessStart}px`,
+          left: `${MIN_HEIGHT}`,
+          width: `${FULL_WIDTH_PERCENTAGE}%`,
+          height: `${height}px`,
+          zIndex: `${NON_BUSINESS_HOURS_OVERLAY_Z_INDEX}`,
+        });
+      }
+    }
+
+    return styles;
+  }
+
+  /**
+   * Checks if a given date/time is within business hours
+   * Returns true if the time is within business hours, false otherwise
+   */
+  static isWithinBusinessHours(
+    date: Date,
+    businessHours: BusinessHoursConfig[] | undefined
+  ): boolean {
+    const businessHoursForDay = this.getBusinessHoursForDay(
+      date,
+      businessHours
+    );
+
+    // If no business hours configured, allow all times
+    if (!businessHoursForDay) {
+      return true;
+    }
+
+    const currentHour = dayjs(date).hour();
+    const currentMinute = dayjs(date).minute();
+    const currentTimeInMinutes = currentHour * 60 + currentMinute;
+    const businessStartInMinutes = businessHoursForDay.start * 60;
+    const businessEndInMinutes = businessHoursForDay.end * 60;
+
+    // Check if current time is within business hours
+    // Note: end time is exclusive (not included)
+    return (
+      currentTimeInMinutes >= businessStartInMinutes &&
+      currentTimeInMinutes < businessEndInMinutes
+    );
+  }
+
+  /**
+   * Checks if an event (with start and end times) fits within business hours
+   * Returns true if the entire event fits within business hours, false otherwise
+   */
+  static isEventWithinBusinessHours(
+    startDate: Date,
+    endDate: Date,
+    businessHours: BusinessHoursConfig[] | undefined
+  ): boolean {
+    // Get business hours for the start date (assuming same day event)
+    const businessHoursForDay = this.getBusinessHoursForDay(
+      startDate,
+      businessHours
+    );
+
+    // If no business hours configured, allow all times
+    if (!businessHoursForDay) {
+      return true;
+    }
+
+    const startHour = dayjs(startDate).hour();
+    const startMinute = dayjs(startDate).minute();
+    const startTimeInMinutes = startHour * 60 + startMinute;
+
+    const endHour = dayjs(endDate).hour();
+    const endMinute = dayjs(endDate).minute();
+    const endTimeInMinutes = endHour * 60 + endMinute;
+
+    const businessStartInMinutes = businessHoursForDay.start * 60;
+    const businessEndInMinutes = businessHoursForDay.end * 60;
+
+    // Check if entire event is within business hours
+    return (
+      startTimeInMinutes >= businessStartInMinutes &&
+      endTimeInMinutes <= businessEndInMinutes
+    );
   }
 }

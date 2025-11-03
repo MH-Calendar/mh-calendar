@@ -72,10 +72,18 @@ export class DaysGenerator {
     if (dayjs(fromDate).isSame(toDate, 'day'))
       return fromDate ? [fromDate] : [];
 
+    const hiddenDays = newMhCalendarStore.state.hiddenDays || [];
+    // Normalize hiddenDays: convert 7 to 0 (Sunday), keep others as is
+    const normalizedHiddenDays = hiddenDays.map((day) => (day === 7 ? 0 : day));
+
     let current = dayjs(fromDate);
 
     while (current.isBefore(toDate, 'day') || current.isSame(toDate, 'day')) {
-      generatedDays.push(current.toDate());
+      const dayOfWeek = current.day(); // 0 = Sunday, 6 = Saturday
+      // Only add day if it's not in the hiddenDays array
+      if (!normalizedHiddenDays.includes(dayOfWeek)) {
+        generatedDays.push(current.toDate());
+      }
       current = current.add(1, 'day');
     }
 
