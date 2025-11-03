@@ -1,6 +1,6 @@
 {
   "name": "mh-calendar-core",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Core of the mh-calendar",
   "main": "dist/index.cjs.js",
   "module": "dist/index.js",
